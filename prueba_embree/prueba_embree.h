@@ -1,0 +1,17 @@
+﻿// prueba_embree.h: archivo de inclusión para archivos de inclusión estándar del sistema,
+// o archivos de inclusión específicos de un proyecto.
+
+#pragma once
+
+#include <iostream>
+
+#include <embree3/rtcore.h>
+#include <embree3/rtcore_ray.h>
+#include "common/math/vec2.h"
+#include "common/math/vec3.h"
+#include "common/camera.h"
+#include <GLFW/glfw3.h>
+
+
+
+// TODO: Haga referencia aquí a los encabezados adicionales que el programa requiere.

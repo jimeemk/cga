@@ -1,0 +1,2 @@
+#TargetFrameworkVersion=v4.0:PlatformToolSet=v120:EnableManagedIncrementalBuild=false:VCToolArchitecture=Native32Bit
+Debug|x64|C:\workspace\cga\embree\common\CMakeFiles\3.18.2\CompilerIdCXX\|
