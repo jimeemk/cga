@@ -14,6 +14,7 @@
 #include <tbb/tbb.h>
 #include "common/algorithms/parallel_for.h"
 #include "common/tasking/taskscheduler.h"
+#include <FreeImage.h>
 
 
 // TODO: Haga referencia aquí a los encabezados adicionales que el programa requiere.
