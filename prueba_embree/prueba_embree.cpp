@@ -2,12 +2,19 @@
 //
 
 #include "prueba_embree.h"
+#define TILE_SIZE_X 10
+#define TILE_SIZE_Y 8
+#define HEIGHT 1400
+#define WIDTH 1400
+
 
 using namespace embree;
 using namespace std;
 
 Vec3fa colores_vertices[8];
 Vec3fa colores_caras[12];
+unsigned int datos[WIDTH][HEIGHT][3];
+unsigned int pixels[WIDTH][HEIGHT][3];
 
 struct Triangulo {
 	unsigned int v1;
@@ -84,7 +91,6 @@ unsigned int agregarCubo(RTCDevice device, RTCScene escena) {
 
 void renderizarPixel(
 	int x, int y,
-	Vec3fa* pixels,
 	const unsigned int width,
 	const unsigned int height,
 	const float time, const ISPCCamera& camara, RTCScene escena)
@@ -130,10 +136,36 @@ void renderizarPixel(
 	unsigned int r = (unsigned int)(255.0f * clamp(color.x, 0.0f, 1.0f));
 	unsigned int g = (unsigned int)(255.0f * clamp(color.y, 0.0f, 1.0f));
 	unsigned int b = (unsigned int)(255.0f * clamp(color.z, 0.0f, 1.0f));
-	pixels[y * width + x].x = r;
-	pixels[y * width + x].y = g;
-	pixels[y * width + x].z = b;
+	pixels[y][x][0] = r;
+	pixels[y][x][1] = g;
+	pixels[y][x][2] = b;
 
+}
+
+void renderTiles(int taskIndex, int threadIndex,
+	const unsigned int width,
+	const unsigned int height,
+	const float time,
+	const ISPCCamera& camara,
+	const RTCScene escena,
+	const int numTilesX,
+	const int numTilesY)
+{
+	const unsigned int tileY = taskIndex / numTilesX;
+	const unsigned int tileX = taskIndex - tileY * numTilesX;
+	const unsigned int x0 = tileX * TILE_SIZE_X;
+	const unsigned int x1 = min(x0 + (INT64)TILE_SIZE_X, (INT64)WIDTH);
+	const unsigned int y0 = tileY * TILE_SIZE_Y;
+	const unsigned int y1 = min(y0 + (INT64)TILE_SIZE_Y, (INT64)HEIGHT);
+
+	for (unsigned int y = y0; y < y1; y++) for (unsigned int x = x0; x < x1; x++)
+	{
+		renderizarPixel(x, y, WIDTH, HEIGHT, time, camara, escena);
+		datos[y][x][0] = pixels[y][x][0] * 256 * 256 * 256;
+		datos[y][x][1] = pixels[y][x][1] * 256 * 256 * 256;
+		datos[y][x][2] = pixels[y][x][2] * 256 * 256 * 256;
+
+	}
 }
 
 
@@ -147,7 +179,7 @@ int main()
 		return -1;
 
 	/* Create a windowed mode window and its OpenGL context */
-	window = glfwCreateWindow(160, 160, "Imagen", NULL, NULL);
+	window = glfwCreateWindow(WIDTH, HEIGHT, "Imagen", NULL, NULL);
 	if (!window)
 	{
 		glfwTerminate();
@@ -159,7 +191,7 @@ int main()
 	glClearColor(0.4f, 0.3f, 0.4f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	unsigned int data[160][160][3];
+	
 	/* Loop until the user closes the window */
 	
 	//inicializacion
@@ -170,28 +202,23 @@ int main()
 	//creacion escena
 	unsigned int cuboID = agregarCubo(device, escena);
 
-	const unsigned int tileY = 0;
-	const unsigned int tileX = 0;
-	const unsigned int x0 = 0;
-	const unsigned int x1 = 160;
-	const unsigned int y0 = 0;
-	const unsigned int y1 = 160;
-	Vec3fa pixels[160*160];
 
 
 	float time = 0.5f;
 	Camera camara;
 	camara.from = Vec3fa(1.5f, 1.5f, -1.5f);
 	camara.to = Vec3fa(0.0f, 0.0f, 0.0f);
-
-	for (unsigned int y = y0; y < y1; y++) for (unsigned int x = x0; x < x1; x++)
-	{
-		renderizarPixel(x, y, pixels, 160, 160, time, camara.getISPCCamera(160, 160), escena);
-		int pixLocation = (y * 160) + (x);
-		data[y][x][0] = pixels[pixLocation].x * 256 * 256 * 256;
-		data[y][x][1] = pixels[pixLocation].y * 256 * 256 * 256;
-		data[y][x][2] = pixels[pixLocation].z * 256 * 256 * 256;
-	}
+	int width = 800;
+	int height = 800;
+	
+	const int numTilesX = (WIDTH + TILE_SIZE_X - 1) / TILE_SIZE_X;
+	const int numTilesY = (HEIGHT + TILE_SIZE_Y - 1) / TILE_SIZE_Y;
+	parallel_for(size_t(0), size_t(numTilesX * numTilesY), [&](const range<size_t>& range) {
+		const int threadIndex = (int)TaskScheduler::threadIndex();
+		cout << threadIndex << '\n';
+		for (size_t i = range.begin(); i < range.end(); i++)
+			renderTiles((int)i, threadIndex, WIDTH, HEIGHT, time, camara.getISPCCamera(WIDTH,HEIGHT), escena, numTilesX, numTilesY);
+	});
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -199,7 +226,7 @@ int main()
 		
 		glClear(GL_COLOR_BUFFER_BIT);
 		/* Swap front and back buffers */
-		glDrawPixels(160, 160, GL_RGB, GL_UNSIGNED_INT, data);
+		glDrawPixels(WIDTH, HEIGHT, GL_RGB, GL_UNSIGNED_INT, datos);
 		glfwSwapBuffers(window);
 
 		/* Poll for and process events */

@@ -11,7 +11,9 @@
 #include "common/math/vec3.h"
 #include "common/camera.h"
 #include <GLFW/glfw3.h>
-
+#include <tbb/tbb.h>
+#include "common/algorithms/parallel_for.h"
+#include "common/tasking/taskscheduler.h"
 
 
 // TODO: Haga referencia aquí a los encabezados adicionales que el programa requiere.

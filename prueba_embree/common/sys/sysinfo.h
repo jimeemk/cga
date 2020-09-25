@@ -60,7 +60,7 @@
 #  define ISA SSE
 #  define ISA_STR "SSE"
 #else 
-#error Unknown ISA
+//#error Unknown ISA
 #endif
 
 namespace embree
