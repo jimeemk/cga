@@ -12,6 +12,4 @@
 #include "common/camera.h"
 #include <GLFW/glfw3.h>
 
-
-
 // TODO: Haga referencia aquí a los encabezados adicionales que el programa requiere.
