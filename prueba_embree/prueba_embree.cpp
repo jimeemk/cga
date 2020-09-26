@@ -161,9 +161,9 @@ void renderTiles(int taskIndex, int threadIndex,
 	for (unsigned int y = y0; y < y1; y++) for (unsigned int x = x0; x < x1; x++)
 	{
 		renderizarPixel(x, y, WIDTH, HEIGHT, time, camara, escena);
-		datos[y][x][0] = pixels[y][x][0] * 256 * 256 * 256;
-		datos[y][x][1] = pixels[y][x][1] * 256 * 256 * 256;
-		datos[y][x][2] = pixels[y][x][2] * 256 * 256 * 256;
+		datos[HEIGHT - y - 1][x][0] = pixels[y][x][0] * 256 * 256 * 256;
+		datos[HEIGHT - y - 1][x][1] = pixels[y][x][1] * 256 * 256 * 256;
+		datos[HEIGHT - y - 1][x][2] = pixels[y][x][2] * 256 * 256 * 256;
 
 	}
 }
