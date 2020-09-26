@@ -229,10 +229,22 @@ int main()
 	const int numTilesY = (HEIGHT + TILE_SIZE_Y - 1) / TILE_SIZE_Y;
 	parallel_for(size_t(0), size_t(numTilesX * numTilesY), [&](const range<size_t>& range) {
 		const int threadIndex = (int)TaskScheduler::threadIndex();
-		cout << threadIndex << '\n';
 		for (size_t i = range.begin(); i < range.end(); i++)
 			renderTiles((int)i, threadIndex, WIDTH, HEIGHT, time, camara.getISPCCamera(WIDTH,HEIGHT), escena, numTilesX, numTilesY);
 	});
+
+
+	auto t = std::time(nullptr);
+	auto tm = *std::localtime(&t);
+	std::ostringstream oss;
+	oss << std::put_time(&tm, "%d-%m-%Y-%H-%M-%S");
+	string str = oss.str();
+	string nombre = str + ".png";
+
+	if (FreeImage_Save(FIF_PNG, bitmap, nombre.c_str(), 0)) {
+		cout << "Image saved" << endl;
+		//Mati le puse ese nombre para que quede con la fecha/hora, tambien lo subi para que se genere antes del while -Jime 
+	}
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -247,9 +259,7 @@ int main()
 		glfwPollEvents();
 	}
 	
-	if (FreeImage_Save(FIF_PNG, bitmap, "test.png", 0)) {
-		cout << "Image saved" << endl;
-	}
+	
 		
 	rtcCommitScene(escena);
 	rtcReleaseScene(escena);
