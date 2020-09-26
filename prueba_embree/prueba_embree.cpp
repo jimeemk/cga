@@ -15,6 +15,7 @@ Vec3fa colores_vertices[8];
 Vec3fa colores_caras[12];
 unsigned int datos[WIDTH][HEIGHT][3];
 unsigned int pixels[WIDTH][HEIGHT][3];
+FIBITMAP* bitmap = FreeImage_Allocate(WIDTH, HEIGHT, 24);
 
 struct Triangulo {
 	unsigned int v1;
@@ -140,6 +141,10 @@ void renderizarPixel(
 	pixels[y][x][1] = g;
 	pixels[y][x][2] = b;
 
+	// pixels[y * width + x].x = r;
+	// pixels[y * width + x].y = g;
+	// pixels[y * width + x].z = b;
+	
 }
 
 void renderTiles(int taskIndex, int threadIndex,
@@ -157,7 +162,8 @@ void renderTiles(int taskIndex, int threadIndex,
 	const unsigned int x1 = min(x0 + (INT64)TILE_SIZE_X, (INT64)WIDTH);
 	const unsigned int y0 = tileY * TILE_SIZE_Y;
 	const unsigned int y1 = min(y0 + (INT64)TILE_SIZE_Y, (INT64)HEIGHT);
-
+	RGBQUAD color;
+	
 	for (unsigned int y = y0; y < y1; y++) for (unsigned int x = x0; x < x1; x++)
 	{
 		renderizarPixel(x, y, WIDTH, HEIGHT, time, camara, escena);
@@ -165,6 +171,10 @@ void renderTiles(int taskIndex, int threadIndex,
 		datos[HEIGHT - y - 1][x][1] = pixels[y][x][1] * 256 * 256 * 256;
 		datos[HEIGHT - y - 1][x][2] = pixels[y][x][2] * 256 * 256 * 256;
 
+		color.rgbRed = pixels[y][x][0];
+		color.rgbGreen = pixels[y][x][1];
+		color.rgbBlue = pixels[y][x][2];
+		FreeImage_SetPixelColor(bitmap, x, y, &color);
 	}
 }
 
@@ -177,6 +187,10 @@ int main()
 	/* Initialize the library */
 	if (!glfwInit())
 		return -1;
+
+	FreeImage_Initialise();
+	
+
 
 	/* Create a windowed mode window and its OpenGL context */
 	window = glfwCreateWindow(WIDTH, HEIGHT, "Imagen", NULL, NULL);
@@ -232,7 +246,11 @@ int main()
 		/* Poll for and process events */
 		glfwPollEvents();
 	}
-
+	
+	if (FreeImage_Save(FIF_PNG, bitmap, "test.png", 0)) {
+		cout << "Image saved" << endl;
+	}
+		
 	rtcCommitScene(escena);
 	rtcReleaseScene(escena);
 	rtcReleaseDevice(device);

@@ -11,7 +11,14 @@ target_link_libraries(prueba_embree embree)
 
 # Agregue un origen al ejecutable de este proyecto.
 
+set(FREEIMAGE_DIR "FreeImage/Dist/x64")
+link_directories(${FREEIMAGE_DIR}/lib)
+include_directories(${FREEIMAGE_DIR}/include)
+target_link_libraries(prueba_embree FreeImage)
 
+
+#link_libraries(FreeImage/Dist/x64/FreeImage)
+#link_directories(FreeImage/Dist/x64/)
 
 # TODO: Agregue pruebas y destinos de instalación si es necesario.
 
