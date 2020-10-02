@@ -16,6 +16,10 @@ typedef struct Photon { //estructura de un foton
             // logic here
             return rhs.point==point; // for example
         }
+        //Jairo, si un dia ocurre que estas muy enojado con tu kdtree porque da errores raros, no inserta bien las cosas, te toma como repetido cosas
+        //Que no estan repetidas, o algo asi, puede ser que internamente use hash y nuestro hash sea cualquier cosa. 
+        //Saludos,
+        //Jime
 };
 
 namespace std {
