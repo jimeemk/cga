@@ -2,7 +2,7 @@
 // o archivos de inclusión específicos de un proyecto.
 
 #pragma once
-
+#define TINYOBJLOADER_IMPLEMENTATION
 #include <iostream>
 
 #include <embree3/rtcore.h>
@@ -15,6 +15,7 @@
 #include "common/algorithms/parallel_for.h"
 #include "common/tasking/taskscheduler.h"
 #include <FreeImage.h>
+#include "tiny_obj_loader.h"
 
 
 // TODO: Haga referencia aquí a los encabezados adicionales que el programa requiere.

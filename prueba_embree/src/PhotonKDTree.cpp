@@ -17,6 +17,7 @@ PhotonKDTree::PhotonKDTree(const vector<Photon>& ps)
         points.insert(par);
     }
     kdtree = new KDTree<3, Photon>(points);
+    
 }
 
 void PhotonKDTree::insert(const Photon& p)
