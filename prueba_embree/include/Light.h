@@ -1,0 +1,21 @@
+#pragma once
+
+#include "../common/math/vec3.h"
+#include <random>
+
+using namespace embree;
+
+class Light //por ahora es una luz cuadrada
+{
+public:
+	Light();
+	Light(Vec3f, Vec3f, double);
+	~Light();
+	Vec3f randomDir();
+	Vec3f getSource();
+	double getPower();
+private:
+	Vec3f source;
+	Vec3f normal;
+	double power;
+};

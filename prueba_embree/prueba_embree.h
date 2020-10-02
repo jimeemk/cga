@@ -16,5 +16,7 @@
 #include "common/tasking/taskscheduler.h"
 #include <FreeImage.h>
 
+#include "include/PhotonMapper.h"
+#include "include/Object.h"
 
 // TODO: Haga referencia aquí a los encabezados adicionales que el programa requiere.

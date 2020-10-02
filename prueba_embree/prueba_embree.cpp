@@ -4,8 +4,8 @@
 #include "prueba_embree.h"
 #define TILE_SIZE_X 10
 #define TILE_SIZE_Y 8
-#define HEIGHT 1400
-#define WIDTH 1400
+#define HEIGHT 800
+#define WIDTH 800
 
 
 using namespace embree;

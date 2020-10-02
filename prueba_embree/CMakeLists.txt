@@ -5,16 +5,17 @@
 cmake_minimum_required (VERSION 3.8)
 find_package(embree 3.0 REQUIRED)
 set(embree_DIR "C:/Program Files/Intel/Embree3")
-add_executable (prueba_embree "prueba_embree.cpp" "prueba_embree.h")
 
-target_link_libraries(prueba_embree embree)
+add_executable( prueba_embree "prueba_embree.h" "prueba_embree.cpp" )
+
+target_link_libraries(prueba_embree PUBLIC embree)
 
 # Agregue un origen al ejecutable de este proyecto.
 
 set(FREEIMAGE_DIR "FreeImage/Dist/x64")
 link_directories(${FREEIMAGE_DIR}/lib)
 include_directories(${FREEIMAGE_DIR}/include)
-target_link_libraries(prueba_embree FreeImage)
+target_link_libraries(prueba_embree PUBLIC FreeImage)
 
 
 #link_libraries(FreeImage/Dist/x64/FreeImage)
@@ -29,9 +30,9 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 add_subdirectory(glfw-3.3.2/glfw-3.3.2)
 
-target_link_libraries(prueba_embree glfw)
+target_link_libraries(prueba_embree PUBLIC glfw)
 find_package(OpenGL REQUIRED)
-target_link_libraries(prueba_embree OpenGL::GL)
+target_link_libraries(prueba_embree PUBLIC OpenGL::GL)
 
 set(TBBDIR "tbb")
 link_directories(${TBBDIR}/lib)
