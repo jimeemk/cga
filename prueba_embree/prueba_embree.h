@@ -3,6 +3,7 @@
 
 #pragma once
 #define TINYOBJLOADER_IMPLEMENTATION
+
 #include <iostream>
 
 #include <embree3/rtcore.h>
