@@ -17,5 +17,7 @@
 #include <FreeImage.h>
 #include "tiny_obj_loader.h"
 
+#include "include/PhotonMapper.h"
+#include "include/Object.h"
 
 // TODO: Haga referencia aquí a los encabezados adicionales que el programa requiere.
