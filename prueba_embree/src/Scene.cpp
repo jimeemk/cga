@@ -13,7 +13,7 @@ Scene::Scene(std::vector<Object*> objs, Light* l)
 {
 	objects = std::vector<Object*>();
 	std::vector<Object*>::iterator it;
-	if (objs != NULL) for (it = objs.begin(); it != objs.end(); it++) objects.push_back(*it);
+	for (it = objs.begin(); it != objs.end(); it++) objects.push_back(*it);
 	light = l;
 }
 

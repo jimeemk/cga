@@ -44,7 +44,6 @@ namespace embree
 
     __forceinline explicit operator const vfloat4() const { return vfloat4(m128); }
     __forceinline explicit operator const   vint4() const { return vint4(_mm_cvtps_epi32(m128)); }
-    __forceinline explicit operator const  Vec2fa() const { return Vec2fa(m128); }
     __forceinline explicit operator const  Vec3ia() const { return Vec3ia(_mm_cvtps_epi32(m128)); }
     
     //__forceinline operator const __m128&() const { return m128; }
@@ -409,7 +408,6 @@ namespace embree
 
     __forceinline explicit operator const vfloat4() const { return vfloat4(m128); }
     __forceinline explicit operator const   vint4() const { return vint4(_mm_cvtps_epi32(m128)); }
-    __forceinline explicit operator const  Vec2fa() const { return Vec2fa(m128); }
     __forceinline explicit operator const  Vec3ia() const { return Vec3ia(_mm_cvtps_epi32(m128)); }
     
     //__forceinline operator const __m128&() const { return m128; }

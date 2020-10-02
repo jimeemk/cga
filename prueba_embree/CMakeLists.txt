@@ -6,7 +6,15 @@ cmake_minimum_required (VERSION 3.8)
 find_package(embree 3.0 REQUIRED)
 set(embree_DIR "C:/Program Files/Intel/Embree3")
 
-add_executable( prueba_embree "prueba_embree.h" "prueba_embree.cpp" )
+file( GLOB LIB_HEADERS src/*.cpp )
+
+ADD_LIBRARY(prueba_embree 
+    ${LIB_HEADERS}
+)
+
+add_executable( ejecutable "prueba_embree.h" "prueba_embree.cpp" )
+target_link_libraries(ejecutable prueba_embree)
+
 
 target_link_libraries(prueba_embree PUBLIC embree)
 
