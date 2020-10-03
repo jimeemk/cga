@@ -26,7 +26,6 @@ namespace std {
     template<>
     struct hash<Photon> {
         inline size_t operator()(const Photon& x) const {
-            // size_t value = your hash computations over x
             return x.point.x;
         }
     };
