@@ -16,7 +16,6 @@
 #include "common/algorithms/parallel_for.h"
 #include "common/tasking/taskscheduler.h"
 #include <FreeImage.h>
-#include "tiny_obj_loader.h"
 
 #include "include/PhotonMapper.h"
 #include "include/Object.h"
