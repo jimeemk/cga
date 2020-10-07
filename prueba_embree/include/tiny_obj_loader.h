@@ -595,7 +595,7 @@ class ObjReader {
 bool LoadObj(attrib_t *attrib, std::vector<shape_t> *shapes,
              std::vector<material_t> *materials, std::string *warn,
              std::string *err, const char *filename,
-             const char *mtl_basedir = NULL, bool triangulate = true,
+             const char *mtl_basedir, bool triangulate = true,
              bool default_vcols_fallback = true);
 
 /// Loads .obj from a file with custom user callback.

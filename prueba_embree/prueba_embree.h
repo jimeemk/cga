@@ -8,15 +8,18 @@
 
 #include <embree3/rtcore.h>
 #include <embree3/rtcore_ray.h>
-#include "common/math/vec2.h"
-#include "common/math/vec3.h"
+#include "common\ray.h"
+#include "common\math\vec2fa.h"
+#include "common\math\vec3fa.h"
+#include "common\math\math.h"
 #include "common/camera.h"
 #include <GLFW/glfw3.h>
 #include <tbb/tbb.h>
 #include "common/algorithms/parallel_for.h"
 #include "common/tasking/taskscheduler.h"
 #include <FreeImage.h>
-#include "tiny_obj_loader.h"
+#include <map>
+#include "include/Raytracer.h"
 
 #include "include/PhotonMapper.h"
 #include "include/Scene.h"
