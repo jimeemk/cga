@@ -1,11 +1,4 @@
 #include "..\include\Object.h"
-#include "..\include\Object.h"
-#include "..\include\Object.h"
-#include "..\include\Object.h"
-#include "..\include\Object.h"
-#include "..\include\Object.h"
-#include "..\include\Object.h"
-#include "../include/Object.h"
 
 Object::Object()
 {

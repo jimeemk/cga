@@ -8,6 +8,8 @@ public:
 	PointLight();
 	~PointLight();
 	PointLight(Vec3f, double);
+	Vec3f getSource();
+	Vec3f randomDir();
 private:
 
 };

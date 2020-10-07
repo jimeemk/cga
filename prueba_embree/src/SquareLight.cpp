@@ -28,8 +28,3 @@ Vec3f SquareLight::getNormal()
 {
 	return normal;
 }
-
-Vec3f SquareLight::randomDir()
-{
-
-}
