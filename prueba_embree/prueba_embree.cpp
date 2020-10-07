@@ -121,53 +121,10 @@ unsigned int agregarCubo(RTCDevice device, RTCScene escena) {
 	return geomID;
 }
 
-unsigned int agregarPlano(RTCDevice device, RTCScene escena) {
-
-	RTCGeometry plano = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
-
-void renderizarPixel(
-	int x, int y,
-	const unsigned int width,
-	const unsigned int height,
-	const float time, const ISPCCamera& camara, RTCScene escena, PhotonKDTree* kdtree)
-{
-	RTCIntersectContext context;
-	rtcInitIntersectContext(&context);
-	Vec3fa* vertices = (Vec3fa*) rtcSetNewGeometryBuffer(plano, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, sizeof(Vec3fa), 8);
-
-	colores_vertices[0] = Vec3fa(0, 0, 0); vertices[0].x = -1; vertices[0].y = -1; vertices[0].z = -1;
-	colores_vertices[1] = Vec3fa(0, 0, 1); vertices[1].x = -1; vertices[1].y = -1; vertices[1].z = +1;
-	colores_vertices[2] = Vec3fa(0, 1, 0); vertices[2].x = -1; vertices[2].y = +1; vertices[2].z = -1;
-	colores_vertices[3] = Vec3fa(0, 1, 1); vertices[3].x = -1; vertices[3].y = +1; vertices[3].z = +1;
-	colores_vertices[4] = Vec3fa(1, 0, 0); vertices[4].x = +1; vertices[4].y = -1; vertices[4].z = -1;
-	colores_vertices[5] = Vec3fa(1, 0, 1); vertices[5].x = +1; vertices[5].y = -1; vertices[5].z = +1;
-	colores_vertices[6] = Vec3fa(1, 1, 0); vertices[6].x = +1; vertices[6].y = +1; vertices[6].z = -1;
-	colores_vertices[7] = Vec3fa(1, 1, 1); vertices[7].x = +1; vertices[7].y = +1; vertices[7].z = +1;
-
-	int tri = 0;
-	Triangulo* triangulos = (Triangulo*) rtcSetNewGeometryBuffer(plano, RTC_BUFFER_TYPE_INDEX, 0, RTC_FORMAT_UINT3, sizeof(Triangulo), 2);
-
-	// bottom side
-	colores_caras[tri] = Vec3fa(0.5f);  
-	triangulos[tri].v0 = 0; triangulos[tri].v1 = 4; triangulos[tri].v2 = 1; tri++;
-	colores_caras[tri] = Vec3fa(0.5f);  
-	triangulos[tri].v0 = 1; triangulos[tri].v1 = 4; triangulos[tri].v2 = 5; tri++;
-
-	rtcSetGeometryVertexAttributeCount(plano, 1);
-	rtcSetSharedGeometryBuffer(plano, RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 0, RTC_FORMAT_FLOAT3, colores_vertices, 0, sizeof(Vec3fa), 8);
-	
-	rtcCommitGeometry(plano);
-	unsigned int geomID = rtcAttachGeometry(escena, plano);
-	rtcCommitScene(escena);
-	rtcReleaseGeometry(plano);
-	return geomID;
-}
-
 /* adds a ground plane to the scene */
 unsigned int addGroundPlane(RTCDevice device, RTCScene scene) {
 	/* create a triangulated plane with 2 triangles and 4 vertices */
 	RTCGeometry mesh = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
-
 	/* set vertices */
 	Vec3fa* vertices = (Vec3fa*) rtcSetNewGeometryBuffer(mesh, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, sizeof(Vec3fa), 4);
 
@@ -208,7 +165,7 @@ void renderizarPixel(
 	int x, int y,
 	const unsigned int width,
 	const unsigned int height,
-	const float time, const ISPCCamera& camara, RTCScene escena) {
+	const float time, const ISPCCamera& camara, RTCScene escena, PhotonKDTree* kdtree) {
 	RTCIntersectContext context;
 	rtcInitIntersectContext(&context);
 	Vec3fa color = Vec3fa(0.0f);
@@ -257,60 +214,6 @@ void renderTiles(int taskIndex, int threadIndex,
 	}
 }
 
-
-RTCGeometry cargarObjeto(RTCDevice device, RTCScene escena, string path) {
-
-	
-
-	tinyobj::attrib_t attrib;
-	std::vector<tinyobj::shape_t> shapes;
-	std::vector<tinyobj::material_t> materials;
-	std::string warn, err;
-
-	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path.c_str())) {
-		throw std::runtime_error(warn + err);
-	}
-
-	RTCGeometry objeto = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
-
-	colores_caras = (Vec3fa*)alignedMalloc2(shapes[0].mesh.num_face_vertices.size() * sizeof(Vec3fa), 16);
-	colores_vertices = (Vec3fa*)alignedMalloc2(attrib.vertices.size() * sizeof(Vec3fa), 16);
-
-	Vec3fa* vertices = (Vec3fa*)rtcSetNewGeometryBuffer(objeto, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, sizeof(Vec3fa), attrib.vertices.size());
-	for (int i = 0, ver = 0; i < attrib.vertices.size(); ver++)
-	{
-		float colores[3];
-		vertices[ver].x = attrib.vertices.at(i); colores[0]= attrib.colors.at(i); i++;
-		vertices[ver].y = attrib.vertices.at(i); colores[1] = attrib.colors.at(i); i++;
-		vertices[ver].z = attrib.vertices.at(i); colores[2] = attrib.colors.at(i); i++;
-		Vec3fa color = { 0.5, 0.5,0.5 };
-		colores_vertices[ver] = color;
-		//colores_vertices.push_back(color);
-	}
-
-	int tri = 0;
-	Triangulo* triangulos = (Triangulo*)rtcSetNewGeometryBuffer(objeto, RTC_BUFFER_TYPE_INDEX, 0, RTC_FORMAT_UINT3, sizeof(Triangulo), shapes[0].mesh.num_face_vertices.size());
-
-	for (int i=0; tri < shapes[0].mesh.num_face_vertices.size(); tri++)
-	{
-		triangulos[tri].v0 = shapes[0].mesh.indices.at(i).vertex_index; i++;
-		triangulos[tri].v1 = shapes[0].mesh.indices.at(i).vertex_index; i++;
-		triangulos[tri].v2 = shapes[0].mesh.indices.at(i).vertex_index; i++;
-		//colores_caras.push_back({ (float)shapes[0].mesh.material_ids.at(tri), (float)shapes[0].mesh.material_ids.at(tri), (float)shapes[0].mesh.material_ids.at(tri) });
-		//colores_caras.push_back({0.2,0.7,0.9});
-		Vec3fa color = { 0.5, 0.5,0.5 };
-		colores_caras[tri] = color;
-	}
-		rtcSetGeometryVertexAttributeCount(objeto, 1);
-		Vec3fa* colVertices = &colores_vertices[0];
-		rtcSetSharedGeometryBuffer(objeto, RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 0, RTC_FORMAT_FLOAT3, colVertices, 0, sizeof(Vec3fa), attrib.vertices.size());
-		rtcCommitGeometry(objeto);
-		unsigned int geomID = rtcAttachGeometry(escena, objeto);
-		rtcCommitScene(escena);
-		rtcReleaseGeometry(objeto);
-		return objeto;
-}
-
 int main()
 {
 	GLFWwindow* window;
@@ -350,8 +253,8 @@ int main()
 	objetos.push_back(obj2);
 
 	unsigned int objetoID = obj->agregarObjeto(device, escena, "Modelos/12221_Cat_v1_l3");
-	unsigned int objetoID2= obj2->agregarObjeto(device, escena, "Modelos/face");
-	
+	unsigned int objetoID2 = obj2->agregarObjeto(device, escena, "Modelos/face");
+
 	unsigned int cuboID = agregarCubo(device, escena);
 	unsigned int planoID = addGroundPlane(device, escena);
 
@@ -363,12 +266,9 @@ int main()
 	int width = 800;
 	int height = 800;
 
-	//prueba photon map
-	Object* gato = new Object(rtcGetGeometry(escena, objetoID), Vec3f(0.f));
+	//prueba photon mapping
 	SquareLight* square_light = new SquareLight(Vec3f(0.5, 15.0, 0.5), 10, 0.2, Vec3f(0.f, -1.f, 0.f));
-	std::vector<Object*> objs;
-	objs.push_back(gato);
-	Scene* scene = new Scene(objs, square_light);
+	Scene* scene = new Scene(objetos, square_light);
 	
 	PhotonMapper* photon_mapper = new PhotonMapper();
 	PhotonKDTree* kdtree = photon_mapper->emitPhotons(scene, 1000);
