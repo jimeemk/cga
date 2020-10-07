@@ -19,6 +19,7 @@
 #include "tiny_obj_loader.h"
 
 #include "include/PhotonMapper.h"
-#include "include/Object.h"
+#include "include/Scene.h"
+#include "include/SquareLight.h"
 
 // TODO: Haga referencia aquí a los encabezados adicionales que el programa requiere.

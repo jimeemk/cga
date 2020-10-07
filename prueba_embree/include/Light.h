@@ -11,7 +11,6 @@ public:
 	Light();
 	Light(Vec3f, double);
 	~Light();
-	Vec3f randomDir();
 	Vec3f getSource();
 	double getPower();
 protected:

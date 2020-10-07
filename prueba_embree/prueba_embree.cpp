@@ -116,7 +116,7 @@ void renderizarPixel(
 	int x, int y,
 	const unsigned int width,
 	const unsigned int height,
-	const float time, const ISPCCamera& camara, RTCScene escena)
+	const float time, const ISPCCamera& camara, RTCScene escena, PhotonKDTree* kdtree)
 {
 	RTCIntersectContext context;
 	rtcInitIntersectContext(&context);
@@ -133,26 +133,12 @@ void renderizarPixel(
 	
 	rtcIntersect1(escena, &context, rh);
 
-	//RayStats_addRay(stats);
-
 	/* shade pixels */
 	Vec3fa color = Vec3fa(0.0f);
 	if (rh->hit.geomID != RTC_INVALID_GEOMETRY_ID)
 	{
 		Vec3fa diffuse = colores_caras[rh->hit.primID];
 		color = color + diffuse * 0.8f;
-		//Vec3fa lightDir = normalize(Vec3fa(-1, -1, -1));
-
-		/* initialize shadow ray */
-		//Ray shadow(ray.org + ray.tfar * ray.dir, neg(lightDir), 0.001f, inf, 0.0f);
-
-		/* trace shadow ray */
-		//rtcOccluded1(data.g_scene, &context, RTCRay_(shadow));
-		//RayStats_addShadowRay(stats);
-
-		/* add light contribution */
-		//if (shadow.tfar >= 0.0f)
-		//	color = color + diffuse * clamp(-dot(lightDir, normalize(ray.Ng)), 0.0f, 1.0f);
 	}
 
 	/* write color to framebuffer */
@@ -162,10 +148,6 @@ void renderizarPixel(
 	pixels[y][x][0] = r;
 	pixels[y][x][1] = g;
 	pixels[y][x][2] = b;
-
-	// pixels[y * width + x].x = r;
-	// pixels[y * width + x].y = g;
-	// pixels[y * width + x].z = b;
 	
 }
 
@@ -176,7 +158,7 @@ void renderTiles(int taskIndex, int threadIndex,
 	const ISPCCamera& camara,
 	const RTCScene escena,
 	const int numTilesX,
-	const int numTilesY)
+	const int numTilesY, PhotonKDTree* kdtree)
 {
 	const unsigned int tileY = taskIndex / numTilesX;
 	const unsigned int tileX = taskIndex - tileY * numTilesX;
@@ -188,7 +170,7 @@ void renderTiles(int taskIndex, int threadIndex,
 	
 	for (unsigned int y = y0; y < y1; y++) for (unsigned int x = x0; x < x1; x++)
 	{
-		renderizarPixel(x, y, WIDTH, HEIGHT, time, camara, escena);
+		renderizarPixel(x, y, WIDTH, HEIGHT, time, camara, escena, kdtree);
 		datos[HEIGHT - y - 1][x][0] = pixels[y][x][0] * 256 * 256 * 256;
 		datos[HEIGHT - y - 1][x][1] = pixels[y][x][1] * 256 * 256 * 256;
 		datos[HEIGHT - y - 1][x][2] = pixels[y][x][2] * 256 * 256 * 256;
@@ -201,7 +183,7 @@ void renderTiles(int taskIndex, int threadIndex,
 }
 
 
-unsigned int cargarObjeto(RTCDevice device, RTCScene escena, string path) {
+RTCGeometry cargarObjeto(RTCDevice device, RTCScene escena, string path) {
 
 	
 
@@ -251,7 +233,7 @@ unsigned int cargarObjeto(RTCDevice device, RTCScene escena, string path) {
 		unsigned int geomID = rtcAttachGeometry(escena, objeto);
 		rtcCommitScene(escena);
 		rtcReleaseGeometry(objeto);
-		return geomID;
+		return objeto;
 }
 
 int main()
@@ -291,15 +273,23 @@ int main()
 	//unsigned int cuboID = agregarCubo(device, escena);
 	unsigned int objetoID = cargarObjeto(device, escena, "Modelos/gato.obj");
 
-
 	float time = 0.5f;
 	Camera camara;
 	camara.from = Vec3fa(10.5f, 10.5f, -10.5f);
 	camara.to = Vec3fa(0.0f, 0.0f, 0.0f);
 	int width = 800;
 	int height = 800;
-	
 
+	//prueba photon map
+	Object* gato = new Object(rtcGetGeometry(escena, objetoID), Vec3f(0.f));
+	SquareLight* square_light = new SquareLight(Vec3f(0.5, 15.0, 0.5), 10, 0.2, Vec3f(0.f, -1.f, 0.f));
+	std::vector<Object*> objs;
+	objs.push_back(gato);
+	Scene* scene = new Scene(objs, square_light);
+	
+	PhotonMapper* photon_mapper = new PhotonMapper();
+	PhotonKDTree* kdtree = photon_mapper->emitPhotons(scene, 1000);
+	std::vector<Photon> neighbors = kdtree->kNNValue(Vec3f(0.f), 10);
 
 
 	const int numTilesX = (WIDTH + TILE_SIZE_X - 1) / TILE_SIZE_X;
@@ -307,7 +297,7 @@ int main()
 	parallel_for(size_t(0), size_t(numTilesX * numTilesY), [&](const range<size_t>& range) {
 		const int threadIndex = (int)TaskScheduler::threadIndex();
 		for (size_t i = range.begin(); i < range.end(); i++)
-			renderTiles((int)i, threadIndex, WIDTH, HEIGHT, time, camara.getISPCCamera(WIDTH,HEIGHT), escena, numTilesX, numTilesY);
+			renderTiles((int)i, threadIndex, WIDTH, HEIGHT, time, camara.getISPCCamera(WIDTH,HEIGHT), escena, numTilesX, numTilesY, kdtree);
 	});
 
 	auto t = std::time(nullptr);

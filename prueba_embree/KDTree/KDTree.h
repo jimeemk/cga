@@ -72,6 +72,11 @@ public:
      */
     ElemType kNNValue(const Point<N>& key, std::size_t k) const;
 
+
+	/*Esto lo agrego yo*/
+
+	void kNeighbors(const Point<N>& key, BoundedPQueue<ElemType>& pQueue) const;
+
 private:
     struct Node {
         Point<N> point;
@@ -325,6 +330,13 @@ ElemType KDTree<N, ElemType>::kNNValue(const Point<N>& key, std::size_t k) const
         }
     }
     return result;
+}
+template <std::size_t N, typename ElemType>
+void KDTree<N, ElemType>::kNeighbors(const Point<N>& key, BoundedPQueue<ElemType>& pQueue) const
+{ 
+	if (empty()) return; // default return value if KD-tree is empty
+	// Recursively search the KD-tree with pruning
+	nearestNeighborRecurse(root_, key, pQueue);
 }
 
 

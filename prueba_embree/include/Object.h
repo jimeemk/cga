@@ -10,12 +10,13 @@ class Object
 {
 public:
 	Object();
+	Object(RTCGeometry, Vec3f);
 	~Object();
-	RTCGeometry* getGeometry();
+	RTCGeometry getGeometry();
 	Vec3f getDiffuseColor();
 
 private:
-	RTCGeometry* geometry;
+	RTCGeometry geometry;
 	Vec3f diffuse_color;
 	//falta el resto de la info que queramos del material
 };

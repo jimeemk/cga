@@ -14,22 +14,26 @@ SquareLight::SquareLight(Vec3f s, double p, double w, Vec3f n) : Light(s, p)
 	normal = normalize(n);
 }
 
-Vec3f SquareLight::getSource()
+Vec3f SquareLight::getSource() //por ahora se asume siempre paralela a los ejes
 {
-	return Vec3f(0.f); //aca tiene que retornar un punto random en el cuadrado
+	return source;
 }
 
-Vec3f SquareLight::randomDir()
+Vec3f SquareLight::randomDir(int *seed)
 {
-	return Vec3f(0.f); //retorna direccion random en funcion de la dist que siguen estas luces
+	double nums[3];
+	Vec3f dir = Vec3f(0.f);
+	do
+	{
+		niederreiter2(3, seed, nums);
+		dir.x = (nums[0] * 2) + 1;
+		dir.y = (nums[1] * 2) + 1;
+		dir.z = (nums[2] * 2) + 1;
+	} while (distance(dir, Vec3f(0.f)) > 1.0);
+	return normalize(dir);
 }
 
 Vec3f SquareLight::getNormal()
 {
 	return normal;
-}
-
-Vec3f SquareLight::randomDir()
-{
-
 }

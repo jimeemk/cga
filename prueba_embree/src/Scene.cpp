@@ -9,7 +9,7 @@ Scene::~Scene()
 	objects.clear();
 }
 
-Scene::Scene(std::vector<Object*> objs, Light* l)
+Scene::Scene(std::vector<Object*> objs, SquareLight* l)
 {
 	objects = std::vector<Object*>();
 	std::vector<Object*>::iterator it;
@@ -25,7 +25,7 @@ std::vector<Object*> Scene::getObjects()
 	return objs;
 }
 
-Light* Scene::getLight()
+SquareLight* Scene::getLight()
 {
 	return light;
 }
