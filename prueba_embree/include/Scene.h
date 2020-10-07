@@ -10,14 +10,12 @@ class Scene
 {
 public:
 	Scene();
-	Scene(std::vector<Object*>, SquareLight*);
+	Scene(std::vector<Object*>, std::vector<Light*>);
 	~Scene();
 	std::vector<Object*> getObjects();
-	void addObject(Object*);
-	SquareLight* getLight();
-	void addLight(Light*);
+	std::vector<Light*> getLights();
 
 private:
 	std::vector<Object*> objects;
-	SquareLight* light; //en futuro seran multiples luces
+	std::vector<Light*> lights; //en futuro seran multiples luces
 };

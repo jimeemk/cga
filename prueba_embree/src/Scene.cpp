@@ -7,35 +7,23 @@ Scene::Scene()
 Scene::~Scene()
 {
 	objects.clear();
+	lights.clear();
 }
 
-Scene::Scene(std::vector<Object*> objs, SquareLight* l)
+Scene::Scene(std::vector<Object*> objs, std::vector<Light*> ls)
 {
-	objects = std::vector<Object*>();
-	std::vector<Object*>::iterator it;
-	for (it = objs.begin(); it != objs.end(); it++) objects.push_back(*it);
-	light = l;
+	objects = objs;
+	lights = ls;
 }
 
 std::vector<Object*> Scene::getObjects()
 {
-	std::vector<Object*> objs;
-	std::vector<Object*>::iterator it;
-	for (it = objects.begin(); it != objects.end(); it++) objs.push_back(*it);
+	std::vector<Object*> objs = objects;
 	return objs;
 }
 
-SquareLight* Scene::getLight()
+std::vector<Light*> Scene::getLights()
 {
-	return light;
-}
-
-void Scene::addObject(Object* obj)
-{
-	objects.push_back(obj);
-}
-
-void Scene::addLight(Light* l)
-{
-	//por ahora nada
+	std::vector<Light*> ls = lights;
+	return ls;
 }

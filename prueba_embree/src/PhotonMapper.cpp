@@ -14,31 +14,26 @@ PhotonKDTree* PhotonMapper::emitPhotons(Scene* scene, unsigned int num_photons)
 {
 	//preparar escena para realizar el photon trace con embree
 	RTCDevice device = rtcNewDevice("threads=0");
-	RTCScene embree_scene = rtcNewScene(device);
+	RTCScene scene_emb = rtcNewScene(device);
 
-	std::vector<Object*> objs = scene->getObjects();
+	Object* obj = new Object();
+	Object* obj2 = new Object();
+	unsigned int objetoID = obj->agregarObjeto(device, scene_emb, "Modelos/12221_Cat_v1_l3");
+	unsigned int objetoID2 = obj2->agregarObjeto(device, scene_emb, "Modelos/face");
 
 	//agregar geometrias a la escena de embree y asociarlas con el ID
-	for (int i = 0; i < objs.size(); i++)
-	{
-		Object* obj = objs.at(i);
-		RTCGeometry geo = obj->getGeometry();
-		std::cout << geo;
-		rtcCommitGeometry(geo);
-		rtcAttachGeometryByID(embree_scene, geo, i);
-		rtcCommitScene(embree_scene);
-	}
 
 	std::vector<Photon> photons;
 	int seed;
+	srand(time(NULL)); //se inicializa seed para en rand de las luces
 
 	for (int i = 0; i < num_photons; i++)
 	{
 		//Inicializacion de un foton.
 		Photon ph;
 		ph.color = Vec3f(255.f); 
-		ph.point = scene->getLight()->getSource();
-		ph.dir = scene->getLight()->randomDir(&seed);
+		ph.point = scene->getLights().at(0)->getSource();
+		ph.dir = scene->getLights().at(0)->randomDir(&seed);
 
 		//Context y RayHit para embree
 		RTCIntersectContext context;
@@ -57,11 +52,10 @@ PhotonKDTree* PhotonMapper::emitPhotons(Scene* scene, unsigned int num_photons)
 		query->hit.primID = RTC_INVALID_GEOMETRY_ID;
 
 		//Interseccion con la escena
-		rtcIntersect1(embree_scene, &context, query);
+		rtcIntersect1(scene_emb, &context, query);
 
 		if (query->hit.geomID != RTC_INVALID_GEOMETRY_ID)
 		{
-			std::cout << "choca con algo";
 			ph.point = ph.point + (ph.dir * query->ray.tfar);
 		}
 		photons.push_back(ph);

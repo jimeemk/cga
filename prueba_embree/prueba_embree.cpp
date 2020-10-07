@@ -267,12 +267,20 @@ int main()
 	int height = 800;
 
 	//prueba photon mapping
-	SquareLight* square_light = new SquareLight(Vec3f(0.5, 15.0, 0.5), 10, 0.2, Vec3f(0.f, -1.f, 0.f));
-	Scene* scene = new Scene(objetos, square_light);
+	std::vector<Light*> lights;
+	SquareLight* light = new SquareLight(Vec3f(0.f, 15.0, 0.f), 10, 6, Vec3f(0.f, -1.f, 0.f), Vec3f(1.f, 0.f, 0.f));
+	lights.push_back(light);
+
+	Scene* scene = new Scene(objetos, lights);
 	
 	PhotonMapper* photon_mapper = new PhotonMapper();
-	PhotonKDTree* kdtree = photon_mapper->emitPhotons(scene, 1000);
+	PhotonKDTree* kdtree = photon_mapper->emitPhotons(scene, 10000);
 	std::vector<Photon> neighbors = kdtree->kNNValue(Vec3f(0.f), 10);
+
+	for (int i = 0; i < neighbors.size(); i++)
+	{
+		cout << neighbors.at(i).point.x << " " << neighbors.at(i).point.y << " " << neighbors.at(i).point.z << "\n";
+	}
 
 
 	const int numTilesX = (WIDTH + TILE_SIZE_X - 1) / TILE_SIZE_X;

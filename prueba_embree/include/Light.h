@@ -1,18 +1,23 @@
 #pragma once
 
+#include <stdlib.h>
+#include <time.h>
+
 #include "../common/math/vec3.h"
-#include <random>
+#include "niederreiter2.h"
 
 using namespace embree;
 
-class Light //por ahora es una luz cuadrada
+//Luz puntual
+class Light 
 {
 public:
 	Light();
 	Light(Vec3f, double);
 	~Light();
-	Vec3f getSource();
+	virtual Vec3f getSource();
 	double getPower();
+	virtual Vec3f randomDir(int *);
 protected:
 	Vec3f source;
 	double power;
