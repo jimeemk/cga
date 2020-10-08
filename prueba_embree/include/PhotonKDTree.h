@@ -5,9 +5,8 @@
 #include "../KDTree/KDTree.h"
 
 using namespace embree;
-using namespace std;
 
-typedef struct Photon { //estructura de un foton
+struct Photon { //estructura de un foton
         Vec3f point;
         Vec3f color; //color o "potencia" foton
         Vec3f dir; //direccion del photon
@@ -45,6 +44,6 @@ public:
     bool contains(const Photon&); //verificar si ya hay un foton en un punto
     int size(); //cantidad de fotones
     bool empty(); //kdtree vacio
-    Photon kNNValue(const Photon&, int);
+    std::vector<Photon> kNNValue(const Vec3f&, int);
 	void saveKDTree(const char*); //persistencia del kdtree
 };

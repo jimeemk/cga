@@ -3,21 +3,19 @@
 #include <embree3/rtcore.h>
 #include <vector>
 
-#include "Light.h"
+#include "SquareLight.h"
 #include "Object.h"
 
 class Scene
 {
 public:
 	Scene();
-	Scene(std::vector<Object*>, Light*);
+	Scene(std::vector<Object*>, std::vector<Light*>);
 	~Scene();
 	std::vector<Object*> getObjects();
-	void addObject(Object*);
-	Light* getLight();
-	void addLight(Light*);
+	std::vector<Light*> getLights();
 
 private:
 	std::vector<Object*> objects;
-	Light* light; //en futuro seran multiples luces
+	std::vector<Light*> lights; //en futuro seran multiples luces
 };

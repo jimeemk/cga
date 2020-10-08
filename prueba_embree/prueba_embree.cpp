@@ -121,45 +121,10 @@ unsigned int agregarCubo(RTCDevice device, RTCScene escena) {
 	return geomID;
 }
 
-unsigned int agregarPlano(RTCDevice device, RTCScene escena) {
-
-	RTCGeometry plano = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
-
-	Vec3fa* vertices = (Vec3fa*) rtcSetNewGeometryBuffer(plano, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, sizeof(Vec3fa), 8);
-
-	colores_vertices[0] = Vec3fa(0, 0, 0); vertices[0].x = -1; vertices[0].y = -1; vertices[0].z = -1;
-	colores_vertices[1] = Vec3fa(0, 0, 1); vertices[1].x = -1; vertices[1].y = -1; vertices[1].z = +1;
-	colores_vertices[2] = Vec3fa(0, 1, 0); vertices[2].x = -1; vertices[2].y = +1; vertices[2].z = -1;
-	colores_vertices[3] = Vec3fa(0, 1, 1); vertices[3].x = -1; vertices[3].y = +1; vertices[3].z = +1;
-	colores_vertices[4] = Vec3fa(1, 0, 0); vertices[4].x = +1; vertices[4].y = -1; vertices[4].z = -1;
-	colores_vertices[5] = Vec3fa(1, 0, 1); vertices[5].x = +1; vertices[5].y = -1; vertices[5].z = +1;
-	colores_vertices[6] = Vec3fa(1, 1, 0); vertices[6].x = +1; vertices[6].y = +1; vertices[6].z = -1;
-	colores_vertices[7] = Vec3fa(1, 1, 1); vertices[7].x = +1; vertices[7].y = +1; vertices[7].z = +1;
-
-	int tri = 0;
-	Triangulo* triangulos = (Triangulo*) rtcSetNewGeometryBuffer(plano, RTC_BUFFER_TYPE_INDEX, 0, RTC_FORMAT_UINT3, sizeof(Triangulo), 2);
-
-	// bottom side
-	colores_caras[tri] = Vec3fa(0.5f);  
-	triangulos[tri].v0 = 0; triangulos[tri].v1 = 4; triangulos[tri].v2 = 1; tri++;
-	colores_caras[tri] = Vec3fa(0.5f);  
-	triangulos[tri].v0 = 1; triangulos[tri].v1 = 4; triangulos[tri].v2 = 5; tri++;
-
-	rtcSetGeometryVertexAttributeCount(plano, 1);
-	rtcSetSharedGeometryBuffer(plano, RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 0, RTC_FORMAT_FLOAT3, colores_vertices, 0, sizeof(Vec3fa), 8);
-	
-	rtcCommitGeometry(plano);
-	unsigned int geomID = rtcAttachGeometry(escena, plano);
-	rtcCommitScene(escena);
-	rtcReleaseGeometry(plano);
-	return geomID;
-}
-
 /* adds a ground plane to the scene */
 unsigned int addGroundPlane(RTCDevice device, RTCScene scene) {
 	/* create a triangulated plane with 2 triangles and 4 vertices */
 	RTCGeometry mesh = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
-
 	/* set vertices */
 	Vec3fa* vertices = (Vec3fa*) rtcSetNewGeometryBuffer(mesh, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, sizeof(Vec3fa), 4);
 
@@ -200,7 +165,7 @@ void renderizarPixel(
 	int x, int y,
 	const unsigned int width,
 	const unsigned int height,
-	const float time, const ISPCCamera& camara, RTCScene escena) {
+	const float time, const ISPCCamera& camara, RTCScene escena, PhotonKDTree* kdtree) {
 	RTCIntersectContext context;
 	rtcInitIntersectContext(&context);
 	Vec3fa color = Vec3fa(0.0f);
@@ -215,10 +180,6 @@ void renderizarPixel(
 	pixels[y][x][0] = r;
 	pixels[y][x][1] = g;
 	pixels[y][x][2] = b;
-
-	// pixels[y * width + x].x = r;
-	// pixels[y * width + x].y = g;
-	// pixels[y * width + x].z = b;
 	
 }
 
@@ -229,7 +190,7 @@ void renderTiles(int taskIndex, int threadIndex,
 	const ISPCCamera& camara,
 	const RTCScene escena,
 	const int numTilesX,
-	const int numTilesY)
+	const int numTilesY, PhotonKDTree* kdtree)
 {
 	const unsigned int tileY = taskIndex / numTilesX;
 	const unsigned int tileX = taskIndex - tileY * numTilesX;
@@ -241,7 +202,7 @@ void renderTiles(int taskIndex, int threadIndex,
 	
 	for (unsigned int y = y0; y < y1; y++) for (unsigned int x = x0; x < x1; x++)
 	{
-		renderizarPixel(x, y, WIDTH, HEIGHT, time, camara, escena);
+		renderizarPixel(x, y, WIDTH, HEIGHT, time, camara, escena, kdtree);
 		datos[HEIGHT - y - 1][x][0] = pixels[y][x][0] * 256 * 256 * 256;
 		datos[HEIGHT - y - 1][x][1] = pixels[y][x][1] * 256 * 256 * 256;
 		datos[HEIGHT - y - 1][x][2] = pixels[y][x][2] * 256 * 256 * 256;
@@ -252,8 +213,6 @@ void renderTiles(int taskIndex, int threadIndex,
 		FreeImage_SetPixelColor(bitmap, x, y, &color);
 	}
 }
-
-
 
 int main()
 {
@@ -295,7 +254,7 @@ int main()
 
 	unsigned int objetoID = obj->agregarObjeto(device, escena, "Modelos/12221_Cat_v1_l3");
 	unsigned int objetoID2 = obj2->agregarObjeto(device, escena, "Modelos/face");
-	
+
 	unsigned int cuboID = agregarCubo(device, escena);
 	unsigned int planoID = addGroundPlane(device, escena);
 
@@ -307,12 +266,29 @@ int main()
 	int width = 800;
 	int height = 800;
 
+	//prueba photon mapping
+	std::vector<Light*> lights;
+	SquareLight* light = new SquareLight(Vec3f(0.f, 15.0, 0.f), 10, 6, Vec3f(0.f, -1.f, 0.f), Vec3f(1.f, 0.f, 0.f));
+	lights.push_back(light);
+
+	Scene* scene = new Scene(objetos, lights);
+	
+	PhotonMapper* photon_mapper = new PhotonMapper();
+	PhotonKDTree* kdtree = photon_mapper->emitPhotons(scene, 10000);
+	std::vector<Photon> neighbors = kdtree->kNNValue(Vec3f(0.f), 10);
+
+	for (int i = 0; i < neighbors.size(); i++)
+	{
+		cout << neighbors.at(i).point.x << " " << neighbors.at(i).point.y << " " << neighbors.at(i).point.z << "\n";
+	}
+
+
 	const int numTilesX = (WIDTH + TILE_SIZE_X - 1) / TILE_SIZE_X;
 	const int numTilesY = (HEIGHT + TILE_SIZE_Y - 1) / TILE_SIZE_Y;
 	parallel_for(size_t(0), size_t(numTilesX * numTilesY), [&](const range<size_t>& range) {
 		const int threadIndex = (int)TaskScheduler::threadIndex();
 		for (size_t i = range.begin(); i < range.end(); i++)
-			renderTiles((int)i, threadIndex, WIDTH, HEIGHT, time, camara.getISPCCamera(WIDTH,HEIGHT), escena, numTilesX, numTilesY);
+			renderTiles((int)i, threadIndex, WIDTH, HEIGHT, time, camara.getISPCCamera(WIDTH,HEIGHT), escena, numTilesX, numTilesY, kdtree);
 	});
 
 	auto t = std::time(nullptr);

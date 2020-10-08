@@ -5,10 +5,10 @@ PhotonKDTree::PhotonKDTree()
     kdtree = new KDTree<3, Photon>();
 }
 
-PhotonKDTree::PhotonKDTree(vector<Photon> ps)
+PhotonKDTree::PhotonKDTree(std::vector<Photon> ps)
 {
-    vector<std::pair<Point<3>, Photon>> points;
-    vector<Photon>::iterator it;
+    std::vector<std::pair<Point<3>, Photon>> points;
+    std::vector<Photon>::iterator it;
     for (it = ps.begin(); it != ps.end(); ++it)
     {
         Point<3> pt = Point<3>();
@@ -45,11 +45,19 @@ int PhotonKDTree::size()
     return (int)kdtree->size();
 }
 
-Photon PhotonKDTree::kNNValue(const Photon& p, int k)
+std::vector<Photon> PhotonKDTree::kNNValue(const Vec3f& p, int k)
 {
+	std::vector<Photon> result;
     Point<3> pt = Point<3>();
-    pt[0] = p.point.x; pt[1] = p.point.y; pt[2] = p.point.z;
-    return kdtree->kNNValue(pt, k);
+	pt[0] = p.x; pt[1] = p.y; pt[2] = p.z;
+	BoundedPQueue<Photon> pQueue(k);
+	kdtree->kNeighbors(pt, pQueue);
+	while (!pQueue.empty())
+	{
+		Photon photon = pQueue.dequeueMin();
+		result.push_back(photon);
+	}
+	return result;
 }
 
 void PhotonKDTree::saveKDTree(const char* ruta)

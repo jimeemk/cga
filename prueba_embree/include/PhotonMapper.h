@@ -10,6 +10,8 @@
 
 using namespace embree;
 
+#include <iostream>
+
 class PhotonMapper
 {
 public:

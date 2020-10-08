@@ -8,7 +8,13 @@ Object::~Object()
 {
 }
 
-RTCGeometry* Object::getGeometry()
+Object::Object(RTCGeometry geo, Vec3f c)
+{
+	geometry = geo;
+	diffuse_color = c;
+}
+
+RTCGeometry Object::getGeometry()
 {
 	return geometry;
 }

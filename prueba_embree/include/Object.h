@@ -24,8 +24,9 @@ class Object
 {
 public:
 	Object();
+	Object(RTCGeometry, Vec3f);
 	~Object();
-	RTCGeometry* getGeometry();
+	RTCGeometry getGeometry();
 	Vec3f getDiffuseColor();
 	Vec3fa* getColoresCaras();
 	Vec3fa* getColoresVertices();
@@ -39,7 +40,7 @@ public:
 	unsigned int agregarObjeto(RTCDevice, RTCScene, string);
 	
 private:
-	RTCGeometry* geometry;
+	RTCGeometry geometry;
 	Vec3f diffuse_color;
 	Vec3fa* colores_caras;
 	Vec3fa* colores_vertices;
