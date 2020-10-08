@@ -17,11 +17,9 @@ SquareLight::SquareLight(Vec3f s, double p, double w, Vec3f n, Vec3f r) : Light(
 
 Vec3f SquareLight::getSource() //por ahora se asume siempre paralela a los ejes
 {
-	
 	//valores random entre -size/2 y +size/2
 	double random_u = (rand() % 1000) / 1000.0;
 	double random_r = (rand() % 1000) / 1000.0;
-
 	random_u = (random_u * size) - (0.5f * size);
 	random_r = (random_r * size) - (0.5f * size);
 
@@ -40,7 +38,7 @@ Vec3f SquareLight::randomDir(int *seed)
 		dir.x = (nums[0] * 2) + 1;
 		dir.y = (nums[1] * 2) + 1;
 		dir.z = (nums[2] * 2) + 1;
-	} while (distance(dir, Vec3f(0.f)) > 1.0 && dot(dir, normal) <= 0); //puntos en la semiesfera que esta sobre el plano de la luz
+	} while (distance(dir, Vec3f(0.f)) > 1.0 || dot(dir, normal) <= 0.f); //puntos en la semiesfera que esta sobre el plano de la luz
 	return normalize(dir);
 }
 
