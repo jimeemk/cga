@@ -294,7 +294,7 @@ int main()
 	objetos.push_back(obj2);
 
 	unsigned int objetoID = obj->agregarObjeto(device, escena, "Modelos/12221_Cat_v1_l3");
-	unsigned int objetoID2= obj2->agregarObjeto(device, escena, "Modelos/face");
+	unsigned int objetoID2 = obj2->agregarObjeto(device, escena, "Modelos/face");
 	
 	unsigned int cuboID = agregarCubo(device, escena);
 	unsigned int planoID = addGroundPlane(device, escena);
