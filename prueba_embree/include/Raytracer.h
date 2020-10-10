@@ -6,46 +6,41 @@
 #include "../common/camera.h"
 #include "../common/ray.h"
 #include <iostream>
+#include <map>
+#include <list>
 
 
 using namespace embree;
-
-struct BRDF {
-	float Ns;               /*< specular exponent */
-	float Ni;               /*< optical density for the surface (index of refraction) */
-	Vec3fa Ka;              /*< ambient reflectivity */
-	Vec3fa Kd;              /*< diffuse reflectivity */
-	Vec3fa Ks;              /*< specular reflectivity */
-	Vec3fa Kt;              /*< transmission filter */
-};	
 
 struct Luz {
 	Vec3fa pos;
 };
 
 struct Material {
-	float coefAmbiente;
-	float coefDifuso;
-	float coefEspecular;
-	float coefReflexion;
-	float coefTransparencia;
-	float indiceRefraccion;
+	float coef_ambiente;
+	float coef_difuso;
+	float coef_especular;
+	float coef_reflexion;
+	float coef_transparencia;
+	float indice_refraccion;
 	Vec3fa color;
 };
 
 class Raytracer
 {
 public:
+	float coeficiente_guardado = 1.00029;
 	Raytracer();
-
-	Vec3fa Raytrace(const ISPCCamera& camara, int x, int y, RTCScene escena, RTCIntersectContext& context);
-	
-	Vec3fa Traza(Ray rayo, int profundidad, RTCScene escena, RTCIntersectContext& context);
-	
-	Vec3fa Sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo, int profundidad);
+	Vec3fa raytrace(const ISPCCamera& camara, int x, int y, RTCScene escena, RTCIntersectContext& context);
+	Vec3fa traza(Ray rayo, int profundidad, RTCScene escena, RTCIntersectContext& context);
+	Vec3fa sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo, int profundidad);
+	Material getMaterial(int geomID);
+	void setMaterials(std::map<int, Material> map);
+	float procesarOclusion(Vec3fa origen, Vec3fa direccion_luz, RTCScene escena, RTCIntersectContext context);
+	Vec3f refract(Vec3fa I, Vec3fa N, float indice_refraccion);
 
 private:
-	int profundidad_max = 3;
-	
+	int profundidad_max = 5;
+	std::map<int, Material> geom_mat_map;
 
 };
