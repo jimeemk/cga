@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+
+<file>
+  
+  <camara>
+    <from x="10.5" y="20" z="-10.5"></from>
+    <to x="0" y="0" z="0"></to>
+  </camara>
+  
+  <imagen>
+    <height>800</height>
+    <width>800</width>
+    <fov>90</fov>
+  </imagen>
+  
+  <cant_fotones>1000</cant_fotones>
+  
+</file>

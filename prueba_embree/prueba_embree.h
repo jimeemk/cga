@@ -20,9 +20,9 @@
 #include <FreeImage.h>
 #include <map>
 #include "include/Raytracer.h"
-
 #include "include/PhotonMapper.h"
 #include "include/Scene.h"
 #include "include/SquareLight.h"
+#include "include/Xml.h"
 
 // TODO: Haga referencia aquí a los encabezados adicionales que el programa requiere.

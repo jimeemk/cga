@@ -60,11 +60,6 @@ std::vector<Photon> PhotonKDTree::kNNValue(const Vec3f& p, int k)
 	return result;
 }
 
-void PhotonKDTree::saveKDTree(const char* ruta)
-{
-    //futura persistencia del kdtree para re-utilizacion 
-}
-
 PhotonKDTree::~PhotonKDTree()
 {
     delete kdtree;

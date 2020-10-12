@@ -105,8 +105,8 @@ PhotonKDTree* PhotonMapper::emitPhotons(Scene* scene, unsigned int num_photons)
 				}
 			}
 			else discard = true;
+			photons.push_back(ph);
 		}
-		photons.push_back(ph);
 	}
 
 	return new PhotonKDTree(photons);
