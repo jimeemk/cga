@@ -12,15 +12,16 @@ Vec3fa Raytracer::raytrace(const ISPCCamera& camara, int x, int y, RTCScene esce
 
 Vec3fa Raytracer::traza(Ray rayo, int profundidad, RTCScene escena, RTCIntersectContext& context) {
 	if (rayo.geomID != RTC_INVALID_GEOMETRY_ID) {
-		return sombra(escena, context, rayo, profundidad);
+		return sombra(escena, context, rayo, profundidad, rayo.geomID);
 	} else {
 		/* color de fondo */
 		return Vec3fa(0.1f);
 	}
 }
 
-Vec3fa Raytracer::sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo, int profundidad) {
-	Material mat = getMaterial(rayo.geomID);
+Vec3fa Raytracer::sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo, int profundidad, int geomID) {
+	//Material mat = getMaterial(rayo.geomID);
+	Material mat = Settings::getInstance()->getObject(geomID)->getMaterial();
 	Vec3fa interseccion_rayo = rayo.org + rayo.tfar * rayo.dir;
 
 	Luz luces[3];
@@ -92,13 +93,6 @@ Vec3fa Raytracer::sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo
 	return color;
 }
 
-Material Raytracer::getMaterial(int geomID) {
-	return geom_mat_map.at(geomID);
-}
-
-void Raytracer::setMaterials(std::map<int, Material> map) {
-	geom_mat_map = map;
-}
 
 float Raytracer::procesarOclusion(Vec3fa origen, Vec3fa direccion_luz, RTCScene escena, RTCIntersectContext context) {
 	float res = 1;
@@ -111,7 +105,7 @@ float Raytracer::procesarOclusion(Vec3fa origen, Vec3fa direccion_luz, RTCScene 
 		hit = rayo_oclusion.tfar != (float) inf;
 		if (hit && rayo_oclusion.geomID != last_geomID) {
 			last_geomID = rayo_oclusion.geomID;
-			res *= getMaterial(last_geomID).coef_transparencia;
+			res *= Settings::getInstance()->getObject(last_geomID)->getMaterial().coef_transparencia;
 		}
 		nuevo_origen = rayo_oclusion.org + rayo_oclusion.tfar * rayo_oclusion.dir;
 		rayo_oclusion = { nuevo_origen, direccion_luz, 0.001f, inf };

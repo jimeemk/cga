@@ -1,9 +1,18 @@
 #include "..\include\Object.h"
-#include "..\include\Object.h"
 
 Object::Object()
 {
 }
+
+Object::Object(string p, Material m, Vec3fa c, float escala, Vec3fa rot)
+{
+	path = p;
+	material = m;
+	centro = c;
+	escalamiento = escala;
+	rotacion = rot;
+}
+
 
 Object::~Object()
 {
@@ -70,7 +79,7 @@ Material Object::getMaterial()
 	return material;
 }
 
-void* alignedMalloc2(size_t size, size_t align)
+void* Object::alignedMalloc2(size_t size, size_t align)
 {
 	if (size == 0)
 		return nullptr;
@@ -84,7 +93,7 @@ void* alignedMalloc2(size_t size, size_t align)
 	return ptr;
 }
 
-unsigned int Object::agregarObjeto(RTCDevice device, RTCScene escena, string path) {
+unsigned int Object::agregarObjeto(RTCDevice device, RTCScene escena) {
 	std::string warn, err;
 	string pathObj = path + ".obj";
 	string mtlObj = "Modelos";
@@ -96,7 +105,8 @@ unsigned int Object::agregarObjeto(RTCDevice device, RTCScene escena, string pat
 
 	colores_caras = (Vec3fa*)alignedMalloc2(shapes[0].mesh.num_face_vertices.size() * sizeof(Vec3fa), 16);
 	colores_vertices = (Vec3fa*)alignedMalloc2(attrib.vertices.size() * sizeof(Vec3fa), 16);
-
+	maxX, maxY, maxZ, minX, minY, minZ = 0;
+	bool primeraVez = true;
 	Vec3fa* vertices = (Vec3fa*)rtcSetNewGeometryBuffer(objeto, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, sizeof(Vec3fa), attrib.vertices.size());
 	for (int i = 0, ver = 0; i < attrib.vertices.size(); ver++)
 	{
@@ -106,7 +116,43 @@ unsigned int Object::agregarObjeto(RTCDevice device, RTCScene escena, string pat
 		vertices[ver].z = attrib.vertices.at(i); colores[2] = attrib.colors.at(i); i++;
 		Vec3fa color = { 0.5, 0.5,0.5 };
 		colores_vertices[ver] = color;
+		if (!primeraVez)
+		{
+			if (vertices[ver].x > maxX)maxX = vertices[ver].x;
+			if (vertices[ver].y > maxY)maxY = vertices[ver].y;
+			if (vertices[ver].z > maxZ)maxZ = vertices[ver].z;
+			if (vertices[ver].x < minX)minX = vertices[ver].x;
+			if (vertices[ver].y < minY)minY = vertices[ver].y;
+			if (vertices[ver].z < minZ)minZ = vertices[ver].z;
+		}
+		else
+		{
+			maxX = vertices[ver].x;
+			maxY = vertices[ver].y;
+			maxZ = vertices[ver].z;
+			minX = vertices[ver].x;
+			minY = vertices[ver].y;
+			minZ = vertices[ver].z;
+			primeraVez = false;
+		}
 		//colores_vertices.push_back(color);
+	}
+	float xCentro = ((maxX + minX) / 2) * escalamiento;
+	float yCentro = ((maxY + minY) / 2) * escalamiento;
+	float zCentro = ((maxZ + minZ) / 2) * escalamiento;
+
+	float tx = centro.x - xCentro;
+	float ty = centro.y - yCentro;
+	float tz = centro.z - zCentro;
+
+	for (int i = 0, ver = 0; i < attrib.vertices.size(); ver++)
+	{
+		vertices[ver] = escalarVertice(vertices[ver], escalamiento);
+		vertices[ver] = rotarVertice(vertices[ver], rotacion);
+		vertices[ver] = trasladarVertice(vertices[ver], Vec3fa(tx,ty,tz));
+		
+		
+		i = i + 3;
 	}
 
 	int tri = 0;
@@ -131,4 +177,28 @@ unsigned int Object::agregarObjeto(RTCDevice device, RTCScene escena, string pat
 	rtcCommitScene(escena);
 	rtcReleaseGeometry(objeto);
 	return geomID;
+}
+
+Vec3fa Object::trasladarVertice(Vec3fa inicial, Vec3fa t) {
+	return Vec3fa(inicial.x + t.x, inicial.y + t.y, inicial.z + t.z);
+
+}
+Vec3fa Object::rotarVertice(Vec3fa inicial, Vec3fa r) {
+	const float DEG2RAD = acos(-1) / 180.0f;
+	float theta = r.x * DEG2RAD;
+	float sx = embree::sin(theta);
+	float  cx = embree::cos(theta);
+
+	theta = r.y * DEG2RAD;
+	float sy = embree::sin(theta);
+	float cy = embree::cos(theta);
+
+	theta = r.z * DEG2RAD;
+	float sz = embree::sin(theta);
+	float cz = embree::cos(theta);
+	return Vec3fa(dot(inicial, Vec3fa(cy * cz, -cy * sz, sy)), dot(inicial, Vec3fa(sx*sy*cz+cx*sz,-sx*sy*sz+cx*cz,-sx*cy)), dot(inicial, Vec3fa(-cx*sy*cz+sx*sz,cx*sy*sz+sx*cz, cx*cy)));
+}
+Vec3fa Object::escalarVertice(Vec3fa inicial, float e) {
+	return inicial*e;
+
 }

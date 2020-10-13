@@ -10,10 +10,8 @@ Scene::~Scene()
 	lights.clear();
 }
 
-Scene::Scene(std::string n, std::vector<Object*> objs, std::vector<Light*> ls)
+Scene::Scene(std::string n)
 {
-	objects = objs;
-	lights = ls;
 	nombre = n;
 }
 
@@ -32,4 +30,16 @@ std::vector<Light*> Scene::getLights()
 std::string Scene::getNombre()
 {
 	return nombre;
+}
+void Scene::addObject(Object* obj)
+{
+	objects.push_back(obj);
+}
+void Scene::addLight(Light* lig)
+{
+	lights.push_back(lig);
+}
+Object* Scene::getObject(int id)
+{
+	return objects.at(id);
 }

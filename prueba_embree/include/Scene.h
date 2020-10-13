@@ -10,11 +10,16 @@ class Scene
 {
 public:
 	Scene();
-	Scene(std::string, std::vector<Object*>, std::vector<Light*>);
+	Scene(std::string);
 	~Scene();
 	std::vector<Object*> getObjects();
 	std::vector<Light*> getLights();
+	
 	std::string getNombre();
+	void addObject(Object* obj);
+	void addLight(Light* lig);
+
+	Object* getObject(int id);
 
 private:
 	std::vector<Object*> objects;

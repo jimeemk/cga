@@ -23,6 +23,8 @@
 #include "include/PhotonMapper.h"
 #include "include/Scene.h"
 #include "include/SquareLight.h"
+#include "include/Plano.h"
+#include "include/Cubo.h"
+#include "include/Settings.h"
 #include "include/Xml.h"
-
 // TODO: Haga referencia aquí a los encabezados adicionales que el programa requiere.

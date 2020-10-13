@@ -12,26 +12,9 @@
 using namespace embree;
 using namespace std;
 
-Vec3fa* colores_caras;
-Vec3fa* colores_vertices;
-std::vector<Object*> objetos;
 unsigned int datos[WIDTH][HEIGHT][3];
 unsigned int pixels[WIDTH][HEIGHT][3];
 FIBITMAP* bitmap = FreeImage_Allocate(WIDTH, HEIGHT, 24);
-
-void* alignedMalloc3(size_t size, size_t align)
-{
-	if (size == 0)
-		return nullptr;
-
-	assert((align & (align - 1)) == 0);
-	void* ptr = _mm_malloc(size, align);
-
-	if (size != 0 && ptr == nullptr)
-		throw std::bad_alloc();
-
-	return ptr;
-}
 
 struct Rayo {
 	Vec3fa camara;
@@ -49,107 +32,6 @@ RTCRay crearRayo(Vec3fa origen, Vec3fa dir) {
 	return rayo;
 }
 
-unsigned int agregarCubo(RTCDevice device, RTCScene escena) {
-	
-	colores_caras = (Vec3fa*)alignedMalloc3(12 * sizeof(Vec3fa), 16);
-	colores_vertices = (Vec3fa*)alignedMalloc3(8 * sizeof(Vec3fa), 16);
-	RTCGeometry cubo = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
-
-	Vec3fa* vertices = (Vec3fa*)rtcSetNewGeometryBuffer(cubo, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, sizeof(Vec3fa), 8);
-	int x_offset = 0;
-	int y_offset = 3;
-	int z_offset = 0;
-	colores_vertices[0] = Vec3fa(0, 0, 0); vertices[0].x = -1 + x_offset; vertices[0].y = -1 + y_offset; vertices[0].z = -1 + z_offset;
-	colores_vertices[1] = Vec3fa(0, 0, 1); vertices[1].x = -1 + x_offset; vertices[1].y = -1 + y_offset; vertices[1].z = +1 + z_offset;
-	colores_vertices[2] = Vec3fa(0, 1, 0); vertices[2].x = -1 + x_offset; vertices[2].y = +1 + y_offset; vertices[2].z = -1 + z_offset;
-	colores_vertices[3] = Vec3fa(0, 1, 1); vertices[3].x = -1 + x_offset; vertices[3].y = +1 + y_offset; vertices[3].z = +1 + z_offset;
-	colores_vertices[4] = Vec3fa(1, 0, 0); vertices[4].x = +1 + x_offset; vertices[4].y = -1 + y_offset; vertices[4].z = -1 + z_offset;
-	colores_vertices[5] = Vec3fa(1, 0, 1); vertices[5].x = +1 + x_offset; vertices[5].y = -1 + y_offset; vertices[5].z = +1 + z_offset;
-	colores_vertices[6] = Vec3fa(1, 1, 0); vertices[6].x = +1 + x_offset; vertices[6].y = +1 + y_offset; vertices[6].z = -1 + z_offset;
-	colores_vertices[7] = Vec3fa(1, 1, 1); vertices[7].x = +1 + x_offset; vertices[7].y = +1 + y_offset; vertices[7].z = +1 + z_offset;
-
-	int tri = 0;
-	Triangulo* triangulos = (Triangulo*)rtcSetNewGeometryBuffer(cubo, RTC_BUFFER_TYPE_INDEX, 0, RTC_FORMAT_UINT3, sizeof(Triangulo), 12);
-	
-	// left side
-	colores_caras[tri] = Vec3fa(1, 0, 0); triangulos[tri].v0 = 0; triangulos[tri].v1 = 1; triangulos[tri].v2 = 2; tri++;
-	colores_caras[tri] = Vec3fa(1, 0, 0); triangulos[tri].v0 = 1; triangulos[tri].v1 = 3; triangulos[tri].v2 = 2; tri++;
-
-	// right side
-	colores_caras[tri] = Vec3fa(0, 1, 0); triangulos[tri].v0 = 4; triangulos[tri].v1 = 6; triangulos[tri].v2 = 5; tri++;
-	colores_caras[tri] = Vec3fa(0, 1, 0); triangulos[tri].v0 = 5; triangulos[tri].v1 = 6; triangulos[tri].v2 = 7; tri++;
-
-	// bottom side
-	colores_caras[tri] = Vec3fa(0.5f);  triangulos[tri].v0 = 0; triangulos[tri].v1 = 4; triangulos[tri].v2 = 1; tri++;
-	colores_caras[tri] = Vec3fa(0.5f);  triangulos[tri].v0 = 1; triangulos[tri].v1 = 4; triangulos[tri].v2 = 5; tri++;
-
-	// top side
-	colores_caras[tri] = Vec3fa(1.0f);  triangulos[tri].v0 = 2; triangulos[tri].v1 = 3; triangulos[tri].v2 = 6; tri++;
-	colores_caras[tri] = Vec3fa(1.0f);  triangulos[tri].v0 = 3; triangulos[tri].v1 = 7; triangulos[tri].v2 = 6; tri++;
-
-	// front side
-	colores_caras[tri] = Vec3fa(0, 0, 1); triangulos[tri].v0 = 0; triangulos[tri].v1 = 2; triangulos[tri].v2 = 4; tri++;
-	colores_caras[tri] = Vec3fa(0, 0, 1); triangulos[tri].v0 = 2; triangulos[tri].v1 = 6; triangulos[tri].v2 = 4; tri++;
-
-	// back side
-	colores_caras[tri] = Vec3fa(1, 1, 0); triangulos[tri].v0 = 1; triangulos[tri].v1 = 5; triangulos[tri].v2 = 3; tri++;
-	colores_caras[tri] = Vec3fa(1, 1, 0); triangulos[tri].v0 = 3; triangulos[tri].v1 = 5; triangulos[tri].v2 = 7; tri++;
-
-
-	rtcSetGeometryVertexAttributeCount(cubo, 1);
-	Vec3fa* colVertices = &colores_vertices[0];
-	rtcSetSharedGeometryBuffer(cubo, RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 0, RTC_FORMAT_FLOAT3, colVertices, 0, sizeof(Vec3fa), 8);
-
-	rtcCommitGeometry(cubo);
-	unsigned int geomID = rtcAttachGeometry(escena, cubo);
-	rtcCommitScene(escena);
-	rtcReleaseGeometry(cubo);
-	return geomID;
-}
-
-/* adds a ground plane to the scene */
-unsigned int addGroundPlane(RTCDevice device, RTCScene scene) {
-	/* create a triangulated plane with 2 triangles and 4 vertices */
-	RTCGeometry mesh = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
-	/* set vertices */
-	Vec3fa* vertices = (Vec3fa*) rtcSetNewGeometryBuffer(mesh, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, sizeof(Vec3fa), 4);
-
-	vertices[0].x = -20; vertices[0].y = -3; vertices[0].z = -20;
-	vertices[1].x = -20; vertices[1].y = -3; vertices[1].z = +20;
-	vertices[2].x = 20; vertices[2].y = -3; vertices[2].z = -20;
-	vertices[3].x = +20; vertices[3].y = -3; vertices[3].z = +20;
-
-	colores_vertices[0] = Vec3fa(0, 0, 0);
-	colores_vertices[1] = Vec3fa(0, 0, 1);
-	colores_vertices[2] = Vec3fa(0, 1, 0);
-	colores_vertices[3] = Vec3fa(1, 0, 0);
-
-	/* set triangles */
-	Triangulo* triangles = (Triangulo*) rtcSetNewGeometryBuffer(mesh, RTC_BUFFER_TYPE_INDEX, 0, RTC_FORMAT_UINT3, sizeof(Triangulo), 2);
-	triangles[0].v0 = 0; triangles[0].v1 = 1; triangles[0].v2 = 2; 
-	triangles[1].v0 = 1; triangles[1].v1 = 3; triangles[1].v2 = 2;
-	colores_caras[0] = Vec3fa(0,0,0.5);
-	colores_caras[1] = Vec3fa(0.5,0,0);
-	
-	rtcSetGeometryVertexAttributeCount(mesh, 1);
-	rtcSetSharedGeometryBuffer(mesh, RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 0, RTC_FORMAT_FLOAT3, colores_vertices, 0, sizeof(Vec3fa), 4);
-
-	rtcCommitGeometry(mesh);
-	unsigned int geomID = rtcAttachGeometry(scene, mesh);
-	rtcCommitScene(scene);
-	rtcReleaseGeometry(mesh);
-
-	return geomID;
-}
-
-/* mapea geomID a un Material */
-map<int, Material> material_mapping;
-Material rojo = { 0.1f, 0.8f, 0.1f, 0, 0, 0, Vec3fa(0.7f, 0, 0.1f) };
-Material azul = { 0.1f, 0.8f, 0.1f, 0, 0, 0, Vec3fa(0.1f, 0, 0.7f) };
-Material verde = { 0, 0.1f, 0.3f, 0, 0.6f, 1.0f, Vec3fa(0.1f, 0.6f, 0.1f) };
-//Material naranja = { 0.2f, 0.4f, 0.4f, 0, 0, 0, Vec3fa(0.9f, 0.6f, 0.1f) }; 
-Material naranja = { 0.2f, 0.6f, 0.2f, 0, 0, 1.4f, Vec3fa(0.9f, 0.6f, 0.1f) };
-
 void renderizarPixel(
 	int x, int y,
 	const unsigned int width,
@@ -160,7 +42,6 @@ void renderizarPixel(
 	Vec3fa color = Vec3fa(0.0f);
 	
 	Raytracer raytracer;
-	raytracer.setMaterials(material_mapping);
 	color = raytracer.raytrace(camara, x, y, escena, context);
 
 	/* write color to framebuffer */
@@ -229,72 +110,21 @@ int main()
 
 	/* Loop until the user closes the window */
 	
-	//inicializacion
-	RTCDevice device = rtcNewDevice("threads=0");
-	RTCScene escena = rtcNewScene(device);
-	rtcRetainDevice(device);
+	//Initialize todo
+
+	Settings* s = Settings::getInstance();
+	s->cargarConfiguraciones();
 	//rtcRetainScene(escena);
 	//creacion escena
-	//unsigned int cuboID = agregarCubo(device, escena);
-	Object* obj = new Object();
-	objetos.push_back(obj);
-
-	Object* obj2 = new Object();
-	objetos.push_back(obj2);
-
-	unsigned int objetoID = obj->agregarObjeto(device, escena, "Modelos/12221_Cat_v1_l3");
-	unsigned int objetoID2 = obj2->agregarObjeto(device, escena, "Modelos/face");
-
-	unsigned int cuboID = agregarCubo(device, escena);
-	unsigned int planoID = addGroundPlane(device, escena);
-
-	material_mapping.insert({ objetoID, rojo });
-	material_mapping.insert({ objetoID2, azul });
-	material_mapping.insert({ cuboID, naranja });
-	material_mapping.insert({ planoID, verde });
-
-	config configuracion = cargarConfiguracion("xml/config.xml");
 
 	float time = 0.5f;
-	Camera camara;
-	camara.from = configuracion.camara_from;
-	camara.to = configuracion.camara_to;
-	camara.fov = configuracion.fov;
-	int width = configuracion.width;
-	int height = configuracion.height;
-
-	//prueba photon mapping
-	std::vector<Light*> lights;
-	SquareLight* light = new SquareLight(Vec3f(0.f, 15.0, 0.f), 10, 6, Vec3f(0.f, -1.f, 0.f), Vec3f(1.f, 0.f, 0.f));
-	lights.push_back(light);
-
-	Scene* scene = new Scene("escena1", objetos, lights);
-
-	//formato del nombre: nombre_escena + cant_fotones
-	//reutilizacion para una misma escena y misma cantidad de fotones
-	std::string ruta_mf = "xml/mapa_fotones/" + scene->getNombre() + "-" + to_string(configuracion.cant_fotones) + ".xml";
-
-
-	PhotonMapper* photon_mapper = new PhotonMapper();
 	
-	//Intento reutilizar un mapa de fotones
-	PhotonKDTree* kdtree = cargarMapaFotones(ruta_mf.c_str());
-
-	//Si no pudo cargar con el nombre segun el formato, emito los fotones y genero el xml
-	if (kdtree == NULL)
-	{
-		std::cout << "No existia\n";
-		kdtree = photon_mapper->emitPhotons(scene, configuracion.cant_fotones);
-		guardarMapaFotones(ruta_mf.c_str(), kdtree);
-	}
-	else std::cout << "Ya existia\n";
-
 	const int numTilesX = (WIDTH + TILE_SIZE_X - 1) / TILE_SIZE_X;
 	const int numTilesY = (HEIGHT + TILE_SIZE_Y - 1) / TILE_SIZE_Y;
 	parallel_for(size_t(0), size_t(numTilesX * numTilesY), [&](const range<size_t>& range) {
 		const int threadIndex = (int)TaskScheduler::threadIndex();
 		for (size_t i = range.begin(); i < range.end(); i++)
-			renderTiles((int)i, threadIndex, WIDTH, HEIGHT, time, camara.getISPCCamera(WIDTH,HEIGHT), escena, numTilesX, numTilesY, kdtree);
+			renderTiles((int)i, threadIndex, WIDTH, HEIGHT, time, Settings::getInstance()->getCamara().getISPCCamera(WIDTH,HEIGHT), s->getEscena(), numTilesX, numTilesY, s->getKdTree());
 	});
 
 	auto t = std::time(nullptr);
@@ -322,11 +152,9 @@ int main()
 		glfwPollEvents();
 	}
 	
-	
-		
-	rtcCommitScene(escena);
-	rtcReleaseScene(escena);
-	rtcReleaseDevice(device);
+	rtcCommitScene(Settings::getInstance()->getEscena());
+	rtcReleaseScene(Settings::getInstance()->getEscena());
+	rtcReleaseDevice(Settings::getInstance()->getDevice());
 	glfwTerminate();
 	return 0;
 }
