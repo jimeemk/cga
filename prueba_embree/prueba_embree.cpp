@@ -5,8 +5,8 @@
 
 #define TILE_SIZE_X 10
 #define TILE_SIZE_Y 8
-#define HEIGHT 800
-#define WIDTH 800
+#define HEIGHT 1200
+#define WIDTH 1200
 
 
 using namespace embree;
@@ -32,6 +32,7 @@ void* alignedMalloc3(size_t size, size_t align)
 
 	return ptr;
 }
+
 struct Rayo {
 	Vec3fa camara;
 	Vec3fa dir;
@@ -41,14 +42,7 @@ struct Rayo {
 
 };
 
-
-
 Vec3fa lightArray[3];
-
-//struct Object {
-//	int geomId;
-//	Material mat;
-//};
 
 RTCRay crearRayo(Vec3fa origen, Vec3fa dir) {
 	RTCRay rayo = { origen.x, origen.y, origen.z, 0.f, dir.x, dir.y, dir.z, 0.f, inf };
@@ -149,9 +143,12 @@ unsigned int addGroundPlane(RTCDevice device, RTCScene scene) {
 }
 
 /* mapea geomID a un Material */
-map<int, Material> materialMapping;
-
-//Material mat = { 0.2f, 0.3f, 0.3f, 0.2f, 0, 0, Vec3fa(0.3, 0, 0.3) };
+map<int, Material> material_mapping;
+Material rojo = { 0.1f, 0.8f, 0.1f, 0, 0, 0, Vec3fa(0.7f, 0, 0.1f) };
+Material azul = { 0.1f, 0.8f, 0.1f, 0, 0, 0, Vec3fa(0.1f, 0, 0.7f) };
+Material verde = { 0, 0.1f, 0.3f, 0, 0.6f, 1.0f, Vec3fa(0.1f, 0.6f, 0.1f) };
+//Material naranja = { 0.2f, 0.4f, 0.4f, 0, 0, 0, Vec3fa(0.9f, 0.6f, 0.1f) }; 
+Material naranja = { 0.2f, 0.6f, 0.2f, 0, 0, 1.4f, Vec3fa(0.9f, 0.6f, 0.1f) };
 
 void renderizarPixel(
 	int x, int y,
@@ -163,7 +160,8 @@ void renderizarPixel(
 	Vec3fa color = Vec3fa(0.0f);
 	
 	Raytracer raytracer;
-	color = raytracer.Raytrace(camara, x, y, escena, context);
+	raytracer.setMaterials(material_mapping);
+	color = raytracer.raytrace(camara, x, y, escena, context);
 
 	/* write color to framebuffer */
 	unsigned int r = (unsigned int)(255.0f * clamp(color.x, 0.0f, 1.0f));
@@ -250,30 +248,46 @@ int main()
 	unsigned int cuboID = agregarCubo(device, escena);
 	unsigned int planoID = addGroundPlane(device, escena);
 
+	material_mapping.insert({ objetoID, rojo });
+	material_mapping.insert({ objetoID2, azul });
+	material_mapping.insert({ cuboID, naranja });
+	material_mapping.insert({ planoID, verde });
+
+	config configuracion = cargarConfiguracion("xml/config.xml");
+
 	float time = 0.5f;
 	Camera camara;
-	camara.from = Vec3fa(10.5f, 10.5f, -10.5f);
-	camara.to = Vec3fa(0.0f, 0.0f, 0.0f);
-	camara.fov = 90;
-	int width = 800;
-	int height = 800;
+	camara.from = configuracion.camara_from;
+	camara.to = configuracion.camara_to;
+	camara.fov = configuracion.fov;
+	int width = configuracion.width;
+	int height = configuracion.height;
 
 	//prueba photon mapping
 	std::vector<Light*> lights;
 	SquareLight* light = new SquareLight(Vec3f(0.f, 15.0, 0.f), 10, 6, Vec3f(0.f, -1.f, 0.f), Vec3f(1.f, 0.f, 0.f));
 	lights.push_back(light);
 
-	Scene* scene = new Scene(objetos, lights);
-	
+	Scene* scene = new Scene("escena1", objetos, lights);
+
+	//formato del nombre: nombre_escena + cant_fotones
+	//reutilizacion para una misma escena y misma cantidad de fotones
+	std::string ruta_mf = "xml/mapa_fotones/" + scene->getNombre() + "-" + to_string(configuracion.cant_fotones) + ".xml";
+
+
 	PhotonMapper* photon_mapper = new PhotonMapper();
-	PhotonKDTree* kdtree = photon_mapper->emitPhotons(scene, 10000);
-	std::vector<Photon> neighbors = kdtree->kNNValue(Vec3f(0.f), 10);
+	
+	//Intento reutilizar un mapa de fotones
+	PhotonKDTree* kdtree = cargarMapaFotones(ruta_mf.c_str());
 
-	for (int i = 0; i < neighbors.size(); i++)
+	//Si no pudo cargar con el nombre segun el formato, emito los fotones y genero el xml
+	if (kdtree == NULL)
 	{
-		cout << neighbors.at(i).point.x << " " << neighbors.at(i).point.y << " " << neighbors.at(i).point.z << "\n";
+		std::cout << "No existia\n";
+		kdtree = photon_mapper->emitPhotons(scene, configuracion.cant_fotones);
+		guardarMapaFotones(ruta_mf.c_str(), kdtree);
 	}
-
+	else std::cout << "Ya existia\n";
 
 	const int numTilesX = (WIDTH + TILE_SIZE_X - 1) / TILE_SIZE_X;
 	const int numTilesY = (HEIGHT + TILE_SIZE_Y - 1) / TILE_SIZE_Y;

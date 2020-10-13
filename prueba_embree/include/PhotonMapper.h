@@ -8,6 +8,8 @@
 #include "PhotonKDTree.h"
 #include "Scene.h"
 
+const int MAX_INTERSECTIONS = 5;
+
 using namespace embree;
 
 #include <iostream>
@@ -18,6 +20,7 @@ public:
 	PhotonMapper();
 	~PhotonMapper();
 	PhotonKDTree* emitPhotons(Scene*, unsigned int);
+	Vec3f randomDir(int*, Vec3f);
 private:
 
 };
