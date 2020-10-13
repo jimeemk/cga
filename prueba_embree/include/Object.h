@@ -20,6 +20,16 @@ struct Vertice {
 	float z;
 };
 
+struct Material {
+	float coefAmbiente;
+	float coefDifuso;
+	float coefEspecular;
+	float coefReflexion;
+	float coefTransparencia;
+	float indiceRefraccion;
+	Vec3fa color;
+};
+
 class Object
 {
 public:
@@ -36,7 +46,7 @@ public:
 	std::vector<float> getTexCoords();
 	std::vector<float> getTexCoordsws();
 	std::vector<tinyobj::skin_weight_t> getSkinWeights();
-
+	Material getMaterial();
 	unsigned int agregarObjeto(RTCDevice, RTCScene, string);
 	
 private:
@@ -45,7 +55,8 @@ private:
 	Vec3fa* colores_caras;
 	Vec3fa* colores_vertices;
 	tinyobj::attrib_t attrib;
-	std::vector<tinyobj::shape_t> shapes;
-	std::vector<tinyobj::material_t> materials;
+	std::vector<tinyobj::shape_t> shapes; // idem materials
+	std::vector<tinyobj::material_t> materials;//Lo usa el tinyobjloader pero no sirve pa nada
+	Material material;
 	//falta el resto de la info que queramos del material
 };

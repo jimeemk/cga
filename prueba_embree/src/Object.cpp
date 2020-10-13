@@ -1,4 +1,5 @@
 #include "..\include\Object.h"
+#include "..\include\Object.h"
 
 Object::Object()
 {
@@ -62,6 +63,11 @@ std::vector<float> Object::getTexCoordsws()
 std::vector<tinyobj::skin_weight_t> Object::getSkinWeights()
 {
 	return attrib.skin_weights;
+}
+
+Material Object::getMaterial()
+{
+	return material;
 }
 
 void* alignedMalloc2(size_t size, size_t align)

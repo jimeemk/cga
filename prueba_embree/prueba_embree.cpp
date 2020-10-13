@@ -41,15 +41,7 @@ struct Rayo {
 
 };
 
-//struct Material {
-//	float coefAmbiente;
-//	float coefDifuso;
-//	float coefEspecular;
-//	float coefReflexion;
-//	float coefTransparencia;
-//	float indiceRefraccion;
-//	Vec3fa color;
-//};
+
 
 Vec3fa lightArray[3];
 
