@@ -10,7 +10,7 @@ Object::Object(string p, Material m, Vec3fa c, float escala, Vec3fa rot)
 	material = m;
 	centro = c;
 	escalamiento = escala;
-	rotacion = normalize(rot);
+	rotacion = rot;
 }
 
 Object::Object(Material m, Vec3fa c, float e, Vec3fa r)
@@ -18,7 +18,7 @@ Object::Object(Material m, Vec3fa c, float e, Vec3fa r)
 	material = m;
 	centro = c;
 	escalamiento = e;
-	rotacion = normalize(r);
+	rotacion = r;
 }
 
 Object::~Object()
@@ -144,21 +144,17 @@ unsigned int Object::agregarObjeto(RTCDevice device, RTCScene escena) {
 		}
 		//colores_vertices.push_back(color);
 	}
-	float xCentro = ((maxX + minX) / 2) * escalamiento;
-	float yCentro = ((maxY + minY) / 2) * escalamiento;
-	float zCentro = ((maxZ + minZ) / 2) * escalamiento;
+	float xCentro = ((maxX + minX) / 2);
+	float yCentro = ((maxY + minY) / 2);
+	float zCentro = ((maxZ + minZ) / 2);
 
-	float tx = centro.x - xCentro;
-	float ty = centro.y - yCentro;
-	float tz = centro.z - zCentro;
 
 	for (int i = 0, ver = 0; i < attrib.vertices.size(); ver++)
 	{
+		vertices[ver] = trasladarVertice(vertices[ver], Vec3fa(-xCentro, -yCentro, -zCentro));
 		vertices[ver] = escalarVertice(vertices[ver], escalamiento);
 		vertices[ver] = rotarVertice(vertices[ver], rotacion);
-		vertices[ver] = trasladarVertice(vertices[ver], Vec3fa(tx,ty,tz));
-		
-		
+		vertices[ver] = trasladarVertice(vertices[ver], Vec3fa(centro.x,centro.y,centro.z));
 		i = i + 3;
 	}
 
@@ -191,19 +187,11 @@ Vec3fa Object::trasladarVertice(Vec3fa inicial, Vec3fa t) {
 
 }
 Vec3fa Object::rotarVertice(Vec3fa inicial, Vec3fa r) {
-	const float DEG2RAD = acos(-1) / 180.0f;
-	float theta = r.x * DEG2RAD;
-	float sx = embree::sin(theta);
-	float  cx = embree::cos(theta);
-
-	theta = r.y * DEG2RAD;
-	float sy = embree::sin(theta);
-	float cy = embree::cos(theta);
-
-	theta = r.z * DEG2RAD;
-	float sz = embree::sin(theta);
-	float cz = embree::cos(theta);
-	return Vec3fa(dot(inicial, Vec3fa(cy * cz, -cy * sz, sy)), dot(inicial, Vec3fa(sx*sy*cz+cx*sz,-sx*sy*sz+cx*cz,-sx*cy)), dot(inicial, Vec3fa(-cx*sy*cz+sx*sz,cx*sy*sz+sx*cz, cx*cy)));
+	r = r * ((float)embree::pi / 180);
+	Vec3fa rotX = Vec3fa(inicial.x, inicial.y*embree::cos(r.x)-inicial.z*embree::sin(r.x),inicial.y*embree::sin(r.x)+inicial.z*embree::cos(r.x));
+	Vec3fa rotY = Vec3fa(rotX.x * embree::cos(r.y) + rotX.z * embree::sin(r.y), rotX.y, rotX.z * embree::cos(r.y) - rotX.x * embree::sin(r.y));
+	Vec3fa rotZ = Vec3fa(rotY.x * embree::cos(r.z) - rotY.y * embree::sin(r.z), rotY.x * embree::sin(r.z) + rotY.y * embree::cos(r.z), rotY.z);
+	return rotZ;
 }
 Vec3fa Object::escalarVertice(Vec3fa inicial, float e) {
 	return inicial*e;
