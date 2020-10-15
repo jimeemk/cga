@@ -63,4 +63,14 @@
             <rotacion x="90" y="0" z="0"/>
         </obj>   
     </objetos>
+    <luces>
+        <cuadrada potencia="10" size="6">
+            <centro x="0" y="15" z="0" />
+            <normal x="0" y="-1" z="0" />
+            <derecha x="1" y="0" z="0" />
+        </cuadrada>
+        <puntual potencia="10">
+            <centro x="10" y="10" z="10" />
+        </puntual>
+    </luces>
 </file>

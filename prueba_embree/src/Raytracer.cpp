@@ -40,10 +40,11 @@ Vec3fa Raytracer::sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo
 	ambiente = mat.coef_ambiente * mat.color;
 	color = color + ambiente;
 
-	for (int i = 0; i < 1; i++) {
+	for (int i = 0; i < luces.size(); i++) {
 		luz = 0;
-		Vec3fa posLuc = Vec3fa(luces.at(i)->getSource().x, luces.at(i)->getSource().y, luces.at(i)->getSource().z);
-		Vec3fa l_dir = posLuc - interseccion_rayo;
+		Vec3fa posLuc = luces.at(i)->getSource();
+		Vec3fa l_dir = luces.at(i)->lightDir(interseccion_rayo);
+		//Vec3fa l_dir = posLuc - interseccion_rayo;
 
 		/* initialize shadow ray */
 		Ray shadow(interseccion_rayo, normalize(l_dir), 0.001f, inf);

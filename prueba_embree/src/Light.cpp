@@ -37,3 +37,8 @@ Vec3f Light::randomDir(int *seed)
 Light::~Light()
 {
 }
+
+Vec3f Light::lightDir(Vec3f point)
+{
+	return normalize(source - point);
+}
