@@ -24,9 +24,11 @@ Vec3fa Raytracer::sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo
 	Material mat = Settings::getInstance()->getObject(geomID)->getMaterial();
 	Vec3fa interseccion_rayo = rayo.org + rayo.tfar * rayo.dir;
 
-	Luz luces[3];
-	float luz = 1;
-	luces[0] = Luz{ Vec3fa(10,10,10) };
+	//Luz luces[3];
+	
+	std::vector<Light*> luces = Settings::getInstance()->getLights();
+	float luz = luces.size();
+	//luces[0] = Luz{ Vec3fa(10,10,10) };
 	//luces[1] = Luz{ Vec3fa(13,0,0) };
 	//luces[2] = Luz{ Vec3fa(10,0,0) };
 
@@ -40,7 +42,8 @@ Vec3fa Raytracer::sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo
 
 	for (int i = 0; i < 1; i++) {
 		luz = 0;
-		Vec3fa l_dir = luces[i].pos - interseccion_rayo;
+		Vec3fa posLuc = Vec3fa(luces.at(i)->getSource().x, luces.at(i)->getSource().y, luces.at(i)->getSource().z);
+		Vec3fa l_dir = posLuc - interseccion_rayo;
 
 		/* initialize shadow ray */
 		Ray shadow(interseccion_rayo, normalize(l_dir), 0.001f, inf);
@@ -51,7 +54,8 @@ Vec3fa Raytracer::sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo
 		rtcOccluded1(escena, &context, RTCRay_(shadow));
 
 		/* factor de atenuacion */
-		float f_att = 1 / ((0.025 * distance(shadow.org, luces[i].pos)) + (0));
+		
+		float f_att = 1 / ((0.025 * distance(shadow.org, posLuc)) + (0));
 
 		if (dot(normalize(rayo.Ng), normalize(l_dir)) > 0) {
 			if (shadow.tfar >= 0) {
