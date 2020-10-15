@@ -10,15 +10,22 @@ Object::Object(string p, Material m, Vec3fa c, float escala, Vec3fa rot)
 	material = m;
 	centro = c;
 	escalamiento = escala;
-	rotacion = rot;
+	rotacion = normalize(rot);
 }
 
+Object::Object(Material m, Vec3fa c, float e, Vec3fa r)
+{
+	material = m;
+	centro = c;
+	escalamiento = e;
+	rotacion = normalize(r);
+}
 
 Object::~Object()
 {
 }
 
-Object::Object(RTCGeometry geo, Vec3f c)
+Object::Object(RTCGeometry geo, Vec3fa c)
 {
 	geometry = geo;
 	diffuse_color = c;
@@ -29,7 +36,7 @@ RTCGeometry Object::getGeometry()
 	return geometry;
 }
 
-Vec3f Object::getDiffuseColor() 
+Vec3fa Object::getDiffuseColor() 
 {
 	return diffuse_color;
 }

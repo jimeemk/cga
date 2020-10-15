@@ -26,7 +26,7 @@ Vec3fa Raytracer::sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo
 
 	Luz luces[3];
 	float luz = 1;
-	luces[0] = Luz{ Vec3fa(0,10,0) };
+	luces[0] = Luz{ Vec3fa(10,10,10) };
 	//luces[1] = Luz{ Vec3fa(13,0,0) };
 	//luces[2] = Luz{ Vec3fa(10,0,0) };
 
