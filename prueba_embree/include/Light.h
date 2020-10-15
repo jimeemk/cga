@@ -18,6 +18,7 @@ public:
 	virtual Vec3f getSource();
 	double getPower();
 	virtual Vec3f randomDir(int *);
+	Vec3f lightDir(Vec3f);
 protected:
 	Vec3f source;
 	double power;

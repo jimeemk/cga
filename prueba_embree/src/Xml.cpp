@@ -247,7 +247,68 @@ void cargarEscena(const char* ruta, Scene* scene)
 			//Cargar las luces y agregarlas a la escena
 			if (luces_ele != NULL)
 			{
+				TiXmlElement* puntual_ele = luces_ele->FirstChildElement("puntual");
+				TiXmlElement* cuadrada_ele = luces_ele->FirstChildElement("cuadrada");
 
+				while (puntual_ele != NULL)
+				{
+					Vec3f centro = Vec3f(0.f);
+					TiXmlElement* centro_ele = puntual_ele->FirstChildElement("centro");
+
+					if (centro_ele != NULL)
+					{
+						centro.x = stof(centro_ele->Attribute("x"));
+						centro.y = stof(centro_ele->Attribute("y"));
+						centro.z = stof(centro_ele->Attribute("z"));
+					}
+
+					float potencia = stof(puntual_ele->Attribute("potencia"));
+
+					Light* puntual = new Light(centro, potencia);
+					scene->addLight(puntual);
+
+					puntual_ele = puntual_ele->NextSiblingElement("puntual");
+				}
+
+				while (cuadrada_ele != NULL)
+				{
+					Vec3f centro = Vec3f(0.f);
+					Vec3f normal = centro;
+					Vec3f derecha = centro;
+
+					TiXmlElement* centro_ele = cuadrada_ele->FirstChildElement("centro");
+					TiXmlElement* normal_ele = cuadrada_ele->FirstChildElement("normal");
+					TiXmlElement* derecha_ele = cuadrada_ele->FirstChildElement("derecha");
+
+					if (centro_ele != NULL)
+					{
+						centro.x = stof(centro_ele->Attribute("x"));
+						centro.y = stof(centro_ele->Attribute("y"));
+						centro.z = stof(centro_ele->Attribute("z"));
+					}
+					
+					if (normal_ele != NULL)
+					{
+						normal.x = stof(normal_ele->Attribute("x"));
+						normal.y = stof(normal_ele->Attribute("y"));
+						normal.z = stof(normal_ele->Attribute("z"));
+					}
+
+					if (derecha_ele != NULL)
+					{
+						derecha.x = stof(derecha_ele->Attribute("x"));
+						derecha.y = stof(derecha_ele->Attribute("y"));
+						derecha.z = stof(derecha_ele->Attribute("z"));
+					}
+
+					float potencia = stof(cuadrada_ele->Attribute("potencia"));
+					float size = stof(cuadrada_ele->Attribute("size"));
+
+					SquareLight* cuadrada = new SquareLight(centro, potencia, size, normal, derecha);
+					scene->addLight(cuadrada);
+
+					cuadrada_ele = cuadrada_ele->NextSiblingElement("cuadrada");
+				}
 			}
 		}
 	}
