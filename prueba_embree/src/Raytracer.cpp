@@ -78,7 +78,7 @@ Vec3fa Raytracer::sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo
 		//if (difuso != Vec3fa(0)) std::cout << difuso << std::endl;
 
 		/* Calculo de termino especular */
-		int n = 100;
+		int n = 500;
 		Vec3fa R = 2 * dot(normalize(rayo.Ng), normalize(l_dir)) * normalize(rayo.Ng) - normalize(l_dir);
 		float RV = dot(normalize(R), -normalize(rayo.dir));
 		especular = especular + luz * f_att * mat.coef_especular * Vec3fa(1) * pow(RV, n); // Color blanco o color de la luz

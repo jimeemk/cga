@@ -4,7 +4,7 @@
   
   <camara>
 
-    <from x="10.5" y="20" z="10.5"></from>
+    <from x="20" y="20" z="20"></from>
     <to x="0" y="0" z="0"></to>
   </camara>
   
@@ -14,6 +14,6 @@
     <fov>90</fov>
   </imagen>
   
-  <cant_fotones>2000</cant_fotones>
+  <cant_fotones>100000</cant_fotones>
   
 </file>

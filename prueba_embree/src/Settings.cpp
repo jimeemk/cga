@@ -69,8 +69,8 @@ void Settings::cargarConfiguraciones() {
 
 	//Esto ahora va a mano pero despues se carga del XML 
 
-	SquareLight* light = new SquareLight(Vec3fa(0.f, 15.0, 0.f), 10, 6, Vec3fa(0.f, -1.f, 0.f), Vec3fa(1.f, 0.f, 0.f));
-	scene->addLight(light);
+	//SquareLight* light = new SquareLight(Vec3fa(0.f, 15.0, 0.f), 10, 6, Vec3fa(0.f, -1.f, 0.f), Vec3fa(1.f, 0.f, 0.f));
+	//scene->addLight(light);
 
 	cargarEscena("xml/escenas/escena1.xml", scene);
 	

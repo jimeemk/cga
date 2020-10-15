@@ -6,8 +6,8 @@
         <material
             nombre="rojo"
             coef_a="0.1"
-            coef_d="0.8"
-            coef_e="0.1"
+            coef_d="0.1"
+            coef_e="0.8"
             coef_r="0"
             coef_t="0"
             indice_r="0"
@@ -28,10 +28,10 @@
         <material
             nombre="verde"
             coef_a="0"
-            coef_d="0.1"
-            coef_e="0.3"
+            coef_d="0.8"
+            coef_e="0.1"
             coef_r="0"
-            coef_t="0.6"
+            coef_t="0.1"
             indice_r="1"
         >
             <color r="0.1" g="0.6" b="0.1"/>
@@ -50,27 +50,32 @@
     </materiales>
     <objetos>
         <plano size="40" material="verde">
-            <centro x="0" y="-3" z="0"/>
+            <centro x="0" y="0" z="0"/>
             <normal x="0" y="1" z="0"/>
             <derecha x="1" y="0" z="0"/>
         </plano>
-        <obj path="Modelos/12221_Cat_v1_l3" material="rojo" escala="0.2">
-            <centro x="2" y="0" z="4"/>
-            <rotacion x="270" y="0" z="0"/>
+        <obj path="Modelos/12221_Cat_v1_l3" material="azul" escala="5">
+            <centro x="0" y="5" z="0"/>
+            <rotacion x="-90" y="90" z="45"/>
         </obj>
-        <obj path="Modelos/12221_Cat_v1_l3" material="azul" escala="1">
-            <centro x="-10" y="0" z="10"/>
-            <rotacion x="90" y="0" z="0"/>
+		<obj path="Modelos/12221_Cat_v1_l3" material="naranja" escala="10">
+            <centro x="5" y="5" z="5"/>
+            <rotacion x="-90" y="90" z="-45"/>
         </obj>   
+		<obj path="Modelos/Wine" material="rojo" escala="10">
+            <centro x="-5" y="5" z="-5"/>
+            <rotacion x="0" y="90" z="0"/>
+        </obj>  
+		<obj path="Modelos/Wine" material="naranja" escala="10">
+            <centro x="2" y="2" z="-5"/>
+            <rotacion x="0" y="90" z="0"/>
+        </obj>  		
     </objetos>
-    <luces>
+	<luces>
         <cuadrada potencia="10" size="6">
             <centro x="0" y="15" z="0" />
             <normal x="0" y="-1" z="0" />
             <derecha x="1" y="0" z="0" />
         </cuadrada>
-        <puntual potencia="10">
-            <centro x="10" y="10" z="10" />
-        </puntual>
     </luces>
 </file>
