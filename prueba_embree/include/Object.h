@@ -52,6 +52,7 @@ public:
 	Vec3fa trasladarVertice(Vec3fa inicial, Vec3fa t);
 	Vec3fa rotarVertice(Vec3fa inicial, Vec3fa r);
 	Vec3fa escalarVertice(Vec3fa inicial, float e);
+	float getLadoMax(float a, float b, float c);
 protected:
 	RTCGeometry geometry;
 	Vec3fa diffuse_color;

@@ -148,11 +148,14 @@ unsigned int Object::agregarObjeto(RTCDevice device, RTCScene escena) {
 	float yCentro = ((maxY + minY) / 2);
 	float zCentro = ((maxZ + minZ) / 2);
 
+	float ladoMax = getLadoMax(maxX - minX, maxY - minY, maxZ - minZ);
+
+	float nuevoEscalamiento = escalamiento / ladoMax;
 
 	for (int i = 0, ver = 0; i < attrib.vertices.size(); ver++)
 	{
 		vertices[ver] = trasladarVertice(vertices[ver], Vec3fa(-xCentro, -yCentro, -zCentro));
-		vertices[ver] = escalarVertice(vertices[ver], escalamiento);
+		vertices[ver] = escalarVertice(vertices[ver], nuevoEscalamiento);
 		vertices[ver] = rotarVertice(vertices[ver], rotacion);
 		vertices[ver] = trasladarVertice(vertices[ver], Vec3fa(centro.x,centro.y,centro.z));
 		i = i + 3;
@@ -196,4 +199,21 @@ Vec3fa Object::rotarVertice(Vec3fa inicial, Vec3fa r) {
 Vec3fa Object::escalarVertice(Vec3fa inicial, float e) {
 	return inicial*e;
 
+}
+
+float Object::getLadoMax(float a, float b, float c)
+{
+	if (a > b)
+	{
+		if (a > c)
+			return a;
+		else
+			return c;
+	}
+	else {
+		if (b > c)
+			return b;
+		else
+			return c;
+	}
 }

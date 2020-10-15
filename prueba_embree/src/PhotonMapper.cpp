@@ -119,7 +119,7 @@ PhotonKDTree* PhotonMapper::emitPhotons(Scene* scene, unsigned int num_photons)
 					ph.color.x = ph.color.x * coef_especular.x / s;
 					ph.color.y = ph.color.y * coef_especular.y / s;
 					ph.color.z = ph.color.z * coef_especular.z / s;
-					ph.dir = dir2;
+					ph.dir = normalize(dir2);
 				}
 				else if (random < t) //transparente
 				{
@@ -130,8 +130,7 @@ PhotonKDTree* PhotonMapper::emitPhotons(Scene* scene, unsigned int num_photons)
 					bool adentro = false;
 					Vec3fa N = { query->hit.Ng_x, query->hit.Ng_y, query->hit.Ng_z };
 					if (dot(N, ph.dir) > 0) { N = N * (-1); adentro = true; }
-					//Si el producto vectorial da positivo, no deberia ser adentro=false??? o sea, viene de afuera. Esto lo copie de la tarea pasada je. Como mucho es cambiar el > por <
-
+					
 					float ior = m.indice_refraccion;
 					float eta;
 					if (adentro)
