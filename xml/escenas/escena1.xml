@@ -1,0 +1,66 @@
+<?xml version="1.0" ?>
+
+<file>
+    <nombre>escena1</nombre>
+    <materiales>
+        <material
+            nombre="rojo"
+            coef_a="0.1"
+            coef_d="0.8"
+            coef_e="0.1"
+            coef_r="0"
+            coef_t="0"
+            indice_r="0"
+        >
+            <color r="0.7" g="0" b="0.1"/>
+        </material>
+        <material
+            nombre="azul"
+            coef_a="0.1"
+            coef_d="0.8"
+            coef_e="0.1"
+            coef_r="0"
+            coef_t="0"
+            indice_r="0"
+        >
+            <color r="0.1" g="0" b="0.7"/>
+        </material>
+        <material
+            nombre="verde"
+            coef_a="0"
+            coef_d="0.1"
+            coef_e="0.3"
+            coef_r="0"
+            coef_t="0.6"
+            indice_r="1"
+        >
+            <color r="0.1" g="0.6" b="0.1"/>
+        </material>
+        <material
+            nombre="naranja"
+            coef_a="0.2"
+            coef_d="0.6"
+            coef_e="0.2"
+            coef_r="0"
+            coef_t="0"
+            indice_r="1.4"
+        >
+            <color r="0.9" g="0.6" b="0.1"/>
+        </material>
+    </materiales>
+    <objetos>
+        <plano size="40" material="verde">
+            <centro x="0" y="-3" z="0"/>
+            <normal x="0" y="1" z="0"/>
+            <derecha x="1" y="0" z="0"/>
+        </plano>
+        <obj path="Modelos/12221_Cat_v1_l3" material="rojo" escala="0.2">
+            <centro x="2" y="0" z="4"/>
+            <rotacion x="270" y="0" z="0"/>
+        </obj>
+        <obj path="Modelos/12221_Cat_v1_l3" material="azul" escala="1">
+            <centro x="-10" y="0" z="10"/>
+            <rotacion x="90" y="0" z="0"/>
+        </obj>   
+    </objetos>
+</file>

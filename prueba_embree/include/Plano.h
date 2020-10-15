@@ -9,6 +9,8 @@ class Plano : public Object
 public:
 	unsigned int agregarObjeto(RTCDevice, RTCScene);
 	Plano();
-	Plano(string path, Material material, Vec3fa centro, float escala, Vec3fa rot);
+	Plano(Material, Vec3fa, float, Vec3fa, Vec3fa);
 	~Plano();
+private:
+	Vec3fa normal;
 };

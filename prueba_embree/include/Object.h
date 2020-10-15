@@ -32,11 +32,12 @@ class Object
 {
 public:
 	Object();
-	Object(string path, Material material, Vec3fa centro, float escala, Vec3fa rot);
-	Object(RTCGeometry, Vec3f);
+	Object(string, Material, Vec3fa, float, Vec3fa);
+	Object(Material, Vec3fa, float, Vec3fa);
+	Object(RTCGeometry, Vec3fa);
 	~Object();
 	RTCGeometry getGeometry();
-	Vec3f getDiffuseColor();
+	Vec3fa getDiffuseColor();
 	Vec3fa* getColoresCaras();
 	Vec3fa* getColoresVertices();
 	std::vector<float> getVertices();
@@ -53,7 +54,7 @@ public:
 	Vec3fa escalarVertice(Vec3fa inicial, float e);
 protected:
 	RTCGeometry geometry;
-	Vec3f diffuse_color;
+	Vec3fa diffuse_color;
 	Vec3fa* colores_caras;
 	Vec3fa* colores_vertices;
 	string path;

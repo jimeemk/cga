@@ -43,3 +43,8 @@ Object* Scene::getObject(int id)
 {
 	return objects.at(id);
 }
+
+void Scene::setNombre(std::string n)
+{
+	nombre = n;
+}

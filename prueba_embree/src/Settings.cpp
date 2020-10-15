@@ -69,27 +69,10 @@ void Settings::cargarConfiguraciones() {
 
 	//Esto ahora va a mano pero despues se carga del XML 
 
-	SquareLight* light = new SquareLight(Vec3f(0.f, 15.0, 0.f), 10, 6, Vec3f(0.f, -1.f, 0.f), Vec3f(1.f, 0.f, 0.f));
+	SquareLight* light = new SquareLight(Vec3fa(0.f, 15.0, 0.f), 10, 6, Vec3fa(0.f, -1.f, 0.f), Vec3fa(1.f, 0.f, 0.f));
 	scene->addLight(light);
-	
-	Material rojo = { 0.1f, 0.4f , 0.4f , 0, 0, 0, Vec3fa(0.7f, 0, 0.1f) };
-	Material azul = { 0.1f, 0.8f , 0.1f , 0, 0, 0, Vec3fa(0.1f, 0, 0.7f) };
-	Material verde = { 0, 0.1f, 0.3f, 0, 0.6f, 1.0f, Vec3fa(0.1f, 0.6f, 0.1f) };
-	Material naranja = { 0.2f, 0.6f, 0.2f , 0, 0, 1.4f, Vec3fa(0.9f, 0.6f, 0.1f) };
 
-	Object* obj = new Object("Modelos/091_W_Aya_10K", rojo, Vec3fa(0,0,0), 0.025, Vec3fa(0, 0, 0));
-	scene->addObject(obj);
-
-	Object* obj2 = new Object("Modelos/face", azul, Vec3fa(-10, 0, 10), 1, Vec3fa(90, 0, 0));
-	scene->addObject(obj2);
-
-	Object* cubo = new Cubo("Modelos/12221_Cat_v1_l3", naranja, Vec3fa(10, 0, -4), 1, Vec3fa(90, 0, 0));
-	scene->addObject(cubo);
-
-	Object* plano = new Plano("Modelos/face", verde, Vec3fa(-5, 0, 5), 4, Vec3fa(0, 0, 0));
-	scene->addObject(plano);
-
-	//Fin de carga a mano
+	cargarEscena("xml/escenas/escena1.xml", scene);
 	
 	for (int i = 0; i < scene->getObjects().size(); i++)
 	{

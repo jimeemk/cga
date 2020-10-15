@@ -5,6 +5,7 @@
 
 #include "SquareLight.h"
 #include "Object.h"
+#include "Plano.h"
 
 class Scene
 {
@@ -18,7 +19,7 @@ public:
 	std::string getNombre();
 	void addObject(Object* obj);
 	void addLight(Light* lig);
-
+	void setNombre(std::string);
 	Object* getObject(int id);
 
 private:

@@ -20,5 +20,5 @@ struct config
 //Definicion de funciones
 void guardarMapaFotones(const char*, PhotonKDTree*);
 PhotonKDTree* cargarMapaFotones(const char*);
-Scene* cargarEscena(const char*);
+void cargarEscena(const char*, Scene*);
 config cargarConfiguracion(const char*);

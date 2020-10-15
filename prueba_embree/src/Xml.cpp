@@ -101,9 +101,156 @@ PhotonKDTree* cargarMapaFotones(const char* ruta)
 	else return new PhotonKDTree(fotones);
 }
 
-Scene* cargarEscena(const char* ruta)
+void cargarEscena(const char* ruta, Scene* scene)
 {
-	return NULL;
+	if (scene != NULL)
+	{
+		std::map<std::string, Material> materiales;
+
+		//Material que se le asigna al obj si se introduce el nombre de algun material
+		//que no haya sido cargado
+		Material default = { 0.1f, 0.8f , 0.1f , 0, 0, 0, Vec3fa(1.0, 1.0, 1.0) };
+
+		TiXmlDocument doc(ruta);
+		doc.LoadFile();
+		TiXmlElement* root = doc.RootElement();
+		if (root != NULL)
+		{
+			TiXmlElement* nombre_ele = root->FirstChildElement("nombre");
+			TiXmlElement* mats_ele = root->FirstChildElement("materiales");
+			TiXmlElement* objetos_ele = root->FirstChildElement("objetos");
+			TiXmlElement* luces_ele = root->FirstChildElement("luces");
+
+			//Cambiar el nombre de la escena
+			if (nombre_ele != NULL) scene->setNombre(nombre_ele->GetText());
+			
+			//Cargar materiales (solo para instanciar a los objetos)
+			if (mats_ele != NULL)
+			{
+				TiXmlElement* material_ele = mats_ele->FirstChildElement("material");
+
+				while (material_ele != NULL)
+				{
+					Material material = default;
+					TiXmlElement* color_ele = material_ele->FirstChildElement("color");
+					if (color_ele != NULL)
+					{
+						float r = stof(color_ele->Attribute("r"));
+						float g = stof(color_ele->Attribute("g"));
+						float b = stof(color_ele->Attribute("b"));
+						material.color = Vec3fa(r, g, b);
+					}
+
+					std::string nombre = material_ele->Attribute("nombre");
+					material.coef_ambiente = stof(material_ele->Attribute("coef_a"));
+					material.coef_difuso = stof(material_ele->Attribute("coef_d"));
+					material.coef_especular = stof(material_ele->Attribute("coef_e"));
+					material.coef_reflexion = stof(material_ele->Attribute("coef_r"));
+					material.coef_transparencia = stof(material_ele->Attribute("coef_t"));
+					material.indice_refraccion = stof(material_ele->Attribute("indice_r"));
+
+					materiales.insert(std::pair<std::string, Material>(nombre, material));
+					material_ele = material_ele->NextSiblingElement("material");
+				}
+			}
+
+			//Cargar objetos y agregarlos a la escena
+			if (objetos_ele != NULL)
+			{
+				TiXmlElement* obj_ele = objetos_ele->FirstChildElement("obj");
+				TiXmlElement* plano_ele = objetos_ele->FirstChildElement("plano");
+
+				while (obj_ele != NULL)
+				{
+					Vec3fa centro = Vec3fa(0.f);
+					Vec3fa rotacion = centro;
+
+					TiXmlElement* centro_ele = obj_ele->FirstChildElement("centro");
+					TiXmlElement* rotacion_ele = obj_ele->FirstChildElement("rotacion");
+
+					if (centro_ele != NULL)
+					{
+						float x = stof(centro_ele->Attribute("x"));
+						float y = stof(centro_ele->Attribute("y"));
+						float z = stof(centro_ele->Attribute("z"));
+						centro = Vec3fa(x, y, z);
+					}
+
+					if (rotacion_ele != NULL)
+					{
+						float x = stof(rotacion_ele->Attribute("x"));
+						float y = stof(rotacion_ele->Attribute("y"));
+						float z = stof(rotacion_ele->Attribute("z"));
+						rotacion = Vec3fa(x, y, z);
+					}
+
+					std::string path = obj_ele->Attribute("path");
+					std::string material = obj_ele->Attribute("material");
+					float escala = stof(obj_ele->Attribute("escala"));
+
+					Material mat = default;
+					if (materiales.find(material) != materiales.end()) mat = materiales.at(material);
+					Object* obj = new Object(path, mat, centro, escala, rotacion);
+					scene->addObject(obj);
+					obj_ele = obj_ele->NextSiblingElement("obj");
+				}
+
+				while (plano_ele != NULL)
+				{
+					Vec3fa centro = Vec3fa(0.f);
+					Vec3fa normal = Vec3fa(0.f, 1.f, 0.f);
+					Vec3fa derecha = Vec3fa(1.f, 0.f, 0.f);
+
+					TiXmlElement* centro_ele = plano_ele->FirstChildElement("centro");
+					TiXmlElement* normal_ele = plano_ele->FirstChildElement("normal");
+					TiXmlElement* derecha_ele = plano_ele->FirstChildElement("derecha");
+
+					float x, y, z;
+
+					if (centro_ele != NULL)
+					{
+						x = stof(centro_ele->Attribute("x"));
+						y = stof(centro_ele->Attribute("y"));
+						z = stof(centro_ele->Attribute("z"));
+						centro = Vec3fa(x, y, z);
+					}
+
+					if (normal_ele != NULL)
+					{
+						x = stof(normal_ele->Attribute("x"));
+						y = stof(normal_ele->Attribute("y"));
+						z = stof(normal_ele->Attribute("z"));
+						normal = Vec3fa(x, y, z);
+					}
+
+					if (derecha_ele != NULL)
+					{
+						x = stof(derecha_ele->Attribute("x"));
+						y = stof(derecha_ele->Attribute("y"));
+						z = stof(derecha_ele->Attribute("z"));
+						derecha = Vec3fa(x, y, z);
+					}
+
+					std::string material = plano_ele->Attribute("material");
+					float size = stof(plano_ele->Attribute("size"));
+
+					Material mat = default;
+					if (materiales.find(material) != materiales.end()) mat = materiales.at(material);
+					Plano* plano = new Plano(mat, centro, size, normal, derecha);
+					scene->addObject(plano);
+
+					plano_ele = objetos_ele->NextSiblingElement("plano");
+				}
+
+			}
+
+			//Cargar las luces y agregarlas a la escena
+			if (luces_ele != NULL)
+			{
+
+			}
+		}
+	}
 }
 
 config cargarConfiguracion(const char* ruta)
