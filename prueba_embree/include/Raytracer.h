@@ -13,12 +13,6 @@
 
 using namespace embree;
 
-struct Luz {
-	Vec3fa pos;
-};
-
-
-
 class Raytracer
 {
 public:
@@ -29,7 +23,8 @@ public:
 	Vec3fa sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo, int profundidad, int geomID);
 	float procesarOclusion(Vec3fa origen, Vec3fa direccion_luz, RTCScene escena, RTCIntersectContext context);
 	Vec3f refract(Vec3fa I, Vec3fa N, float indice_refraccion);
-
+	Vec3fa estimacion_radiancia(std::vector<Photon> nearest_photons, Vec3fa pos, Vec3fa dir, int p, float lambert_brdf, float radius);
+	float Raytracer::getRadius(std::vector<Photon> photons, Vec3f pos);
 private:
 	int profundidad_max = 5;
 

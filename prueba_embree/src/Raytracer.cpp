@@ -3,6 +3,7 @@
 Raytracer::Raytracer() {}
 
 Vec3fa Raytracer::raytrace(const ISPCCamera& camara, int x, int y, RTCScene escena, RTCIntersectContext& context) {
+	
 	Ray rayo = { Vec3fa(camara.xfm.p), Vec3fa(normalize(x * camara.xfm.l.vx + y * camara.xfm.l.vy + camara.xfm.l.vz)), 0.0f, inf };
 
 	/* busca interseccion del rayo contra el objeto mas cercano en la escena */
@@ -37,8 +38,15 @@ Vec3fa Raytracer::sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo
 	Vec3fa difuso = Vec3fa(0.0f);
 	Vec3fa especular = Vec3fa(0.0f);
 
+	PhotonKDTree* kdtree = Settings::getInstance()->getKdTree();
+
 	ambiente = mat.coef_ambiente * mat.color;
 	color = color + ambiente;
+	
+	/* obtengo los n fotones mas cercanos al punto de interseccion */
+	int cant_photons = 80;
+	std::vector<Photon> nearest_photons = kdtree->kNNValue(interseccion_rayo, cant_photons);
+	float radius = getRadius(nearest_photons, interseccion_rayo);
 
 	for (int i = 0; i < luces.size(); i++) {
 		luz = 0;
@@ -48,18 +56,16 @@ Vec3fa Raytracer::sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo
 
 		/* initialize shadow ray */
 		Ray shadow(interseccion_rayo, normalize(l_dir), 0.001f, inf);
-		shadow.flags = 0;
 
 		/* trace shadow ray */
-		//rtcIntersect1(escena, &context, RTCRayHit_(shadow));
-		rtcOccluded1(escena, &context, RTCRay_(shadow));
+		rtcIntersect1(escena, &context, RTCRayHit_(shadow));
 
 		/* factor de atenuacion */
 		
-		float f_att = 1 / ((0.025 * distance(shadow.org, posLuc)) + (0));
+		float f_att = 1 / ((0.00020 * distance(shadow.org, posLuc)) + (0));
 
 		if (dot(normalize(rayo.Ng), normalize(l_dir)) > 0) {
-			if (shadow.tfar >= 0) {
+			if (shadow.tfar == (float)inf) {
 				luz = 1;
 			} else {
 				/* calcular porcentaje de luz bloqueada por cuerpos con transparencia */
@@ -67,13 +73,15 @@ Vec3fa Raytracer::sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo
 			}
 		}
 
-		difuso = difuso + luz * f_att * mat.coef_difuso * mat.color * dot(normalize(rayo.Ng), normalize(l_dir));
+		difuso = difuso + luz * f_att * estimacion_radiancia(nearest_photons, interseccion_rayo, rayo.dir, cant_photons, mat.coef_difuso/std::_Pi, radius);/* mat.coef_difuso * mat.color * dot(normalize(rayo.Ng), normalize(l_dir))*/;
+
+		//if (difuso != Vec3fa(0)) std::cout << difuso << std::endl;
 
 		/* Calculo de termino especular */
-		int n = 300;
+		int n = 100;
 		Vec3fa R = 2 * dot(normalize(rayo.Ng), normalize(l_dir)) * normalize(rayo.Ng) - normalize(l_dir);
 		float RV = dot(normalize(R), -normalize(rayo.dir));
-		especular = especular + luz * f_att * mat.coef_especular * mat.color * pow(RV, n);
+		especular = especular + luz * f_att * mat.coef_especular * Vec3fa(1) * pow(RV, n); // Color blanco o color de la luz
 	}
 
 	/* color final */
@@ -97,7 +105,6 @@ Vec3fa Raytracer::sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo
 	}
 	return color;
 }
-
 
 float Raytracer::procesarOclusion(Vec3fa origen, Vec3fa direccion_luz, RTCScene escena, RTCIntersectContext context) {
 	float res = 1;
@@ -124,12 +131,9 @@ Vec3f Raytracer::refract(Vec3fa I, Vec3fa N, float indice_refraccion) {
 	float cos_i = dot(normalize(normal), normalize(I));
 	float n_actual = 1, n_material = indice_refraccion;
 	if (cos_i < 0) {
-		// we are outside the surface, we want cos(theta) to be positive
 		cos_i = -cos_i;
 	} else {
-		// we are inside the surface, cos(theta) is already positive but reverse normal direction
 		normal = -N;
-		// swap the refraction indices
 		std::swap(n_actual, n_material);
 	}
 	float eta = n_actual / n_material;
@@ -140,4 +144,27 @@ Vec3f Raytracer::refract(Vec3fa I, Vec3fa N, float indice_refraccion) {
 	} else {
 		return eta * I + (eta * cos_i - sqrtf(k)) * normal;
 	}
+}
+
+Vec3fa Raytracer::estimacion_radiancia(std::vector<Photon> nearest_photons, Vec3fa pos, Vec3fa dir, int p, float lambert_brdf, float radius) {
+	float pi = std::_Pi;
+	Vec3fa result = Vec3fa(0.0f);
+
+	for (int i = 0; i < p; i++) {
+		result = result + lambert_brdf * nearest_photons[i].color;
+		//std::cout << nearest_photons[i].color << std::endl;
+	}
+	//std::cout << result << std::endl;
+	return result * (1 / (pi * radius * radius));
+}
+
+float Raytracer::getRadius(std::vector<Photon> photons, Vec3f pos) {
+	float max = 0;
+	for (int i = 0; i < photons.size(); i++) {
+		if (distance(photons[i].point, pos) > max) {
+			max = distance(photons[i].point, pos);
+		}
+	}
+	//std::cout << max << std::endl;
+	return max;
 }

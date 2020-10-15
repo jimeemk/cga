@@ -111,7 +111,6 @@ int main()
 	/* Loop until the user closes the window */
 	
 	//Initialize todo
-
 	Settings* s = Settings::getInstance();
 	s->cargarConfiguraciones();
 	//rtcRetainScene(escena);
