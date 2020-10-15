@@ -25,16 +25,30 @@ Vec3f PhotonMapper::randomDir(int *seed, Vec3f normal)
 	return normalize(dir);
 }
 
+Vec3f reglaCoseno(int* seed, Vec3f normal)
+{
+	double nums[2];
+	niederreiter2(2, seed, nums);
+	float rho = embree::sqrt(nums[0]);
+	float theta = nums[1] * 2 * (float)embree::pi;
+	float x = theta * embree::cos(rho);
+	float y = theta * embree::sin(rho);
+	float z = embree::sqrt(1 - x*x - y*y);
+
+	//Eso es para una normal en la direccion de z, asi que voy a rotarlo para que la normal coincida
+	float titay = embree::atan(-1*(normal.x/normal.z)); // Angulo que rota en y para que x de la normal=0
+	float titax = embree::atan(normal.y / normal.z);//Angulo que rota en x para que y de la normal =0
+	float xroty = embree::cos(titay) * x + embree::sin(titay) * z;
+	float zroty = embree::sin(titay) * x * (-1) + embree::cos(titay) * z;
+	float yrotx = embree::sin(titax) * zroty * (-1) + embree::cos(titax) * y;
+	float zrotx = embree::sin(titax) * y + embree::cos(titax) * zroty;
+
+	return normalize(Vec3fa(xroty,yrotx,zrotx));
+
+}
+
 PhotonKDTree* PhotonMapper::emitPhotons(Scene* scene, unsigned int num_photons)
 {
-	//preparar escena para realizar el photon trace con embree
-	//RTCDevice device = rtcNewDevice("threads=0");
-	//RTCScene scene_emb = rtcNewScene(device);
-	//Material m1={0.2,0.6,0.2,0.5,0.2,0.3,Vec3fa(1.0,1.0,0)};//kd,ka,ks,kr,kt,kR,color
-	//Object* obj = new Object("Modelos/12221_Cat_v1_l3",m1);
-	//Object* obj2 = new Object("Modelos/face",m1);
-	//unsigned int objetoID = obj->agregarObjeto(device, scene_emb);
-	//unsigned int objetoID2 = obj2->agregarObjeto(device, scene_emb);
 
 	std::vector<Photon> photons;
 	int seed;
@@ -46,7 +60,7 @@ PhotonKDTree* PhotonMapper::emitPhotons(Scene* scene, unsigned int num_photons)
 		Photon ph;
 		ph.point = scene->getLights().at(0)->getSource();
 		ph.dir = scene->getLights().at(0)->randomDir(&seed);
-
+		ph.color = Vec3fa(1,1,1);
 		//Context y RayHit para embree
 		RTCIntersectContext context;
 		rtcInitIntersectContext(&context);
@@ -90,19 +104,14 @@ PhotonKDTree* PhotonMapper::emitPhotons(Scene* scene, unsigned int num_photons)
 				
 				if (random < d) //refleja difuso
 				{
-					//Aca falta la magia que quiere hacer el edu del coseno y la semiesfera. Creo que se que es lo que quiere, pero son 4am bye bye
 					//se calcula el foton "reflejado" y se modifica el color del foton
 					ph.color.x = ph.color.x * coef_difuso.x / d;
 					ph.color.y = ph.color.y * coef_difuso.y / d;
 					ph.color.z = ph.color.z * coef_difuso.z / d;
-					ph.dir = randomDir(&seed, Vec3f(query->hit.Ng_x, query->hit.Ng_y, query->hit.Ng_z));
+					ph.dir = reglaCoseno(&seed, Vec3f(query->hit.Ng_x, query->hit.Ng_y, query->hit.Ng_z));
 				}
 				else if (random < s) //refleja especular
 				{
-					//se calcula el foton "reflejado" y se modifica el color del foton
-					//bool adentro = false;
-					//if (fun->productoEscalar(N, dir) > 0) N = fun->multiplicarK(N, -1), adentro = true;
-					//punto R = fun->resta(dir, fun->multiplicarK(N, fun->productoEscalar(N, dir) * 2));
 					Vec3fa N = { query->hit.Ng_x, query->hit.Ng_y, query->hit.Ng_z };
 					if (dot(N, ph.dir) > 0) N = N * (-1);
 					Vec3fa dir2 = ph.dir - (dot(N, ph.dir) * 2) * N;
@@ -114,6 +123,9 @@ PhotonKDTree* PhotonMapper::emitPhotons(Scene* scene, unsigned int num_photons)
 				}
 				else if (random < t) //transparente
 				{
+					//Atenuo el color segun cuanta luz deja pasar el material
+					
+					ph.color = ph.color * m.coef_transparencia;
 
 					bool adentro = false;
 					Vec3fa N = { query->hit.Ng_x, query->hit.Ng_y, query->hit.Ng_z };
@@ -160,7 +172,8 @@ PhotonKDTree* PhotonMapper::emitPhotons(Scene* scene, unsigned int num_photons)
 	for (int i = 0; i < photons.size(); i++)
 	{
 		Vec3fa p = photons.at(i).point;
-		file << p.x << "/" << p.y << "/" << p.z << "/\n";
+		Vec3fa c = photons.at(i).color;
+		file << p.x << "/" << p.y << "/" << p.z <<"/"<< c.x << "/" << c.y << "/" << c.z << "/\n";
 	}
 	file.close();
 

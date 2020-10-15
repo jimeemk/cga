@@ -3,7 +3,7 @@
 <file>
   
   <camara>
-    <from x="10.5" y="20" z="-10.5"></from>
+    <from x="'20.5" y="20" z="0.5"></from>
     <to x="0" y="0" z="0"></to>
   </camara>
   

@@ -81,7 +81,7 @@ void renderTiles(int taskIndex, int threadIndex,
 		color.rgbRed = pixels[y][x][0];
 		color.rgbGreen = pixels[y][x][1];
 		color.rgbBlue = pixels[y][x][2];
-		FreeImage_SetPixelColor(bitmap, x, y, &color);
+		FreeImage_SetPixelColor(bitmap, x, HEIGHT - y - 1, &color);
 	}
 }
 
