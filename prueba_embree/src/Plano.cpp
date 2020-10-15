@@ -23,8 +23,8 @@ unsigned int Plano::agregarObjeto(RTCDevice device, RTCScene scene)
 	/* set vertices */
 	Vec3fa* vertices = (Vec3fa*)rtcSetNewGeometryBuffer(mesh, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, sizeof(Vec3fa), 4);
 
-	Vec3fa up = cross(normal, normalize(rotacion));
-	Vec3fa r = cross(up, normal);
+	Vec3fa up = normalize(cross(normal, normalize(rotacion)));
+	Vec3fa r = normalize(cross(up, normal));
 
 	//abajo a la izquierda
 	vertices[0] = centro + (escalamiento * 0.5) * up + (escalamiento * 0.5) * r;
