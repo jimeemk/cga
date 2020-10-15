@@ -60,7 +60,8 @@ PhotonKDTree* PhotonMapper::emitPhotons(Scene* scene, unsigned int num_photons)
 		Photon ph;
 		ph.point = scene->getLights().at(0)->getSource();
 		ph.dir = scene->getLights().at(0)->randomDir(&seed);
-		ph.color = Vec3fa(1,1,1);
+		ph.color = Vec3fa(scene->getLights().at(0)->getPower()/num_photons);
+
 		//Context y RayHit para embree
 		RTCIntersectContext context;
 		rtcInitIntersectContext(&context);
