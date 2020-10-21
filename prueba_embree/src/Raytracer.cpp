@@ -68,7 +68,7 @@ Vec3fa Raytracer::sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo
 		}
 		indirecta = indirecta + estimacion_radiancia(nearest_photons, interseccion_rayo, rayo.dir, cant_photons, mat.coef_difuso / std::_Pi, radius);
 		
-		//difuso = difuso + luz * f_att *  mat.coef_difuso * mat.color * dot(normalize(rayo.Ng), normalize(l_dir)) / 1000; // sacar la division entre 1000
+		difuso = difuso + luz * f_att *  mat.coef_difuso * mat.color * dot(normalize(rayo.Ng), normalize(l_dir)); 
 
 		/* Calculo de termino especular */
 		int n = 500;
