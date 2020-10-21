@@ -11,12 +11,13 @@
 #include <iostream>
 #include <cmath>
 #include <iostream>
+#include <math.h>
+#include <tbb/tbb.h>
 
-const int MAX_INTERSECTIONS = 5;
+const int MAX_INTERSECTIONS = 100;
 
 using namespace embree;
-
-
+using namespace std;
 
 class PhotonMapper
 {

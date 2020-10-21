@@ -5,8 +5,8 @@
 
 #define TILE_SIZE_X 10
 #define TILE_SIZE_Y 8
-#define HEIGHT 1200
-#define WIDTH 1200
+#define HEIGHT 800
+#define WIDTH 800
 
 
 using namespace embree;
@@ -70,17 +70,17 @@ void renderTiles(int taskIndex, int threadIndex,
 	const unsigned int y0 = tileY * TILE_SIZE_Y;
 	const unsigned int y1 = min(y0 + (INT64)TILE_SIZE_Y, (INT64)HEIGHT);
 	RGBQUAD color;
-	
+	glClear(GL_COLOR_BUFFER_BIT);
 	for (unsigned int y = y0; y < y1; y++) for (unsigned int x = x0; x < x1; x++)
 	{
 		renderizarPixel(x, y, WIDTH, HEIGHT, time, camara, escena, kdtree);
 		datos[HEIGHT - y - 1][x][0] = pixels[y][x][0] * 256 * 256 * 256;
 		datos[HEIGHT - y - 1][x][1] = pixels[y][x][1] * 256 * 256 * 256;
 		datos[HEIGHT - y - 1][x][2] = pixels[y][x][2] * 256 * 256 * 256;
-
 		color.rgbRed = pixels[y][x][0];
 		color.rgbGreen = pixels[y][x][1];
 		color.rgbBlue = pixels[y][x][2];
+
 		FreeImage_SetPixelColor(bitmap, x, HEIGHT - y - 1, &color);
 	}
 }
@@ -123,7 +123,16 @@ int main()
 	parallel_for(size_t(0), size_t(numTilesX * numTilesY), [&](const range<size_t>& range) {
 		const int threadIndex = (int)TaskScheduler::threadIndex();
 		for (size_t i = range.begin(); i < range.end(); i++)
-			renderTiles((int)i, threadIndex, WIDTH, HEIGHT, time, Settings::getInstance()->getCamara().getISPCCamera(WIDTH,HEIGHT), s->getEscena(), numTilesX, numTilesY, s->getKdTree());
+		{
+			renderTiles((int)i, threadIndex, WIDTH, HEIGHT, time, Settings::getInstance()->getCamara().getISPCCamera(WIDTH, HEIGHT), s->getEscena(), numTilesX, numTilesY, s->getKdTree());
+			glClear(GL_COLOR_BUFFER_BIT);
+			/* Swap front and back buffers */
+			glDrawPixels(WIDTH, HEIGHT, GL_RGB, GL_UNSIGNED_INT, datos);
+			glfwSwapBuffers(window);
+
+			/* Poll for and process events */
+			glfwPollEvents();
+		}
 	});
 
 	auto t = std::time(nullptr);

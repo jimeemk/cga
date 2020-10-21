@@ -239,7 +239,7 @@ void cargarEscena(const char* ruta, Scene* scene)
 					Plano* plano = new Plano(mat, centro, size, normal, derecha);
 					scene->addObject(plano);
 
-					plano_ele = objetos_ele->NextSiblingElement("plano");
+					plano_ele = plano_ele->NextSiblingElement("plano");
 				}
 
 			}
