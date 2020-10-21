@@ -14,23 +14,12 @@ using namespace std;
 
 unsigned int datos[WIDTH][HEIGHT][3];
 unsigned int pixels[WIDTH][HEIGHT][3];
+
 FIBITMAP* bitmap = FreeImage_Allocate(WIDTH, HEIGHT, 24);
-
-struct Rayo {
-	Vec3fa camara;
-	Vec3fa dir;
-	//Vec3fa org;
-	float tnear;
-	float tfar;
-
-};
-
-Vec3fa lightArray[3];
-
-RTCRay crearRayo(Vec3fa origen, Vec3fa dir) {
-	RTCRay rayo = { origen.x, origen.y, origen.z, 0.f, dir.x, dir.y, dir.z, 0.f, inf };
-	return rayo;
-}
+FIBITMAP* bitmap_directa = FreeImage_Allocate(WIDTH, HEIGHT, 24);
+FIBITMAP* bitmap_especular = FreeImage_Allocate(WIDTH, HEIGHT, 24);
+FIBITMAP* bitmap_causticas = FreeImage_Allocate(WIDTH, HEIGHT, 24);
+FIBITMAP* bitmap_indirecta = FreeImage_Allocate(WIDTH, HEIGHT, 24);
 
 void renderizarPixel(
 	int x, int y,
@@ -51,6 +40,21 @@ void renderizarPixel(
 	pixels[y][x][0] = r;
 	pixels[y][x][1] = g;
 	pixels[y][x][2] = b;
+
+	RGBQUAD color_especular;
+	color_especular.rgbRed = 255.0f * clamp(raytracer.rt_especular.x, 0.0f, 1.0f);
+	color_especular.rgbGreen = 255.0f * clamp(raytracer.rt_especular.y, 0.0f, 1.0f);
+	color_especular.rgbBlue = 255.0f * clamp(raytracer.rt_especular.z, 0.0f, 1.0f);
+
+
+	RGBQUAD color_indirecta;
+	color_indirecta.rgbRed = 255.0f * clamp(raytracer.rt_indirecta.x, 0.0f, 1.0f);
+	color_indirecta.rgbGreen = 255.0f * clamp(raytracer.rt_indirecta.y, 0.0f, 1.0f);
+	color_indirecta.rgbBlue = 255.0f * clamp(raytracer.rt_indirecta.z, 0.0f, 1.0f);
+
+
+	FreeImage_SetPixelColor(bitmap_especular, x, HEIGHT - y - 1, &color_especular);
+	FreeImage_SetPixelColor(bitmap_indirecta, x, HEIGHT - y - 1, &color_indirecta);
 	
 }
 
@@ -132,10 +136,19 @@ int main()
 	oss << std::put_time(&tm, "%d-%m-%Y-%H-%M-%S");
 	string str = oss.str();
 	string nombre = str + ".png";
+	string nombre_especular = "especular_" + str + ".png";
+	string nombre_indirecta = "indirecta_" + str + ".png";
 
 	if (FreeImage_Save(FIF_PNG, bitmap, nombre.c_str(), 0)) {
 		cout << "Image saved" << endl;
-		//Mati le puse ese nombre para que quede con la fecha/hora, tambien lo subi para que se genere antes del while -Jime 
+	}
+
+	if (FreeImage_Save(FIF_PNG, bitmap_especular, nombre_especular.c_str(), 0)) {
+		cout << "Image saved" << endl;
+	}
+	
+	if (FreeImage_Save(FIF_PNG, bitmap_indirecta, nombre_indirecta.c_str(), 0)) {
+		cout << "Image saved" << endl;
 	}
 
 	while (!glfwWindowShouldClose(window))

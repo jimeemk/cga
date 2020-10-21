@@ -1,6 +1,9 @@
 #include "../include/Raytracer.h"
 
-Raytracer::Raytracer() {}
+Raytracer::Raytracer() {
+	rt_especular = Vec3fa(0.0f);
+	rt_indirecta = Vec3fa(0.0f);
+}
 
 Vec3fa Raytracer::raytrace(const ISPCCamera& camara, int x, int y, RTCScene escena, RTCIntersectContext& context) {
 	
@@ -21,30 +24,22 @@ Vec3fa Raytracer::traza(Ray rayo, int profundidad, RTCScene escena, RTCIntersect
 }
 
 Vec3fa Raytracer::sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo, int profundidad, int geomID) {
-	//Material mat = getMaterial(rayo.geomID);
+	
 	Material mat = Settings::getInstance()->getObject(geomID)->getMaterial();
 	Vec3fa interseccion_rayo = rayo.org + rayo.tfar * rayo.dir;
-
-	//Luz luces[3];
 	
 	std::vector<Light*> luces = Settings::getInstance()->getLights();
 	float luz = luces.size();
-	//luces[0] = Luz{ Vec3fa(10,10,10) };
-	//luces[1] = Luz{ Vec3fa(13,0,0) };
-	//luces[2] = Luz{ Vec3fa(10,0,0) };
 
 	Vec3fa color = Vec3fa(0.0f);
-	Vec3fa ambiente = Vec3fa(0.0f);
+	Vec3fa indirecta = Vec3fa(0.0f);
 	Vec3fa difuso = Vec3fa(0.0f);
 	Vec3fa especular = Vec3fa(0.0f);
 
 	PhotonKDTree* kdtree = Settings::getInstance()->getKdTree();
-
-	ambiente = mat.coef_ambiente * mat.color;
-	color = color + ambiente;
 	
 	/* obtengo los n fotones mas cercanos al punto de interseccion */
-	int cant_photons = 80;
+	int cant_photons = 140;
 	std::vector<Photon> nearest_photons = kdtree->kNNValue(interseccion_rayo, cant_photons);
 	float radius = getRadius(nearest_photons, interseccion_rayo);
 
@@ -52,7 +47,6 @@ Vec3fa Raytracer::sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo
 		luz = 0;
 		Vec3fa posLuc = luces.at(i)->getSource();
 		Vec3fa l_dir = luces.at(i)->lightDir(interseccion_rayo);
-		//Vec3fa l_dir = posLuc - interseccion_rayo;
 
 		/* initialize shadow ray */
 		Ray shadow(interseccion_rayo, normalize(l_dir), 0.001f, inf);
@@ -72,10 +66,9 @@ Vec3fa Raytracer::sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo
 				luz = procesarOclusion(interseccion_rayo, l_dir, escena, context);
 			}
 		}
-
-		difuso = difuso + luz * f_att * estimacion_radiancia(nearest_photons, interseccion_rayo, rayo.dir, cant_photons, mat.coef_difuso/std::_Pi, radius);/* mat.coef_difuso * mat.color * dot(normalize(rayo.Ng), normalize(l_dir))*/;
-
-		//if (difuso != Vec3fa(0)) std::cout << difuso << std::endl;
+		indirecta = indirecta + estimacion_radiancia(nearest_photons, interseccion_rayo, rayo.dir, cant_photons, mat.coef_difuso / std::_Pi, radius);
+		
+		//difuso = difuso + luz * f_att *  mat.coef_difuso * mat.color * dot(normalize(rayo.Ng), normalize(l_dir)) / 1000; // sacar la division entre 1000
 
 		/* Calculo de termino especular */
 		int n = 500;
@@ -85,7 +78,7 @@ Vec3fa Raytracer::sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo
 	}
 
 	/* color final */
-	color = color + difuso + especular;
+	color = color  + difuso + especular + indirecta;
 
 	if (profundidad < profundidad_max) {
 		if (mat.coef_reflexion > 0) {
@@ -103,6 +96,11 @@ Vec3fa Raytracer::sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo
 			}
 		}
 	}
+	
+	rt_especular = especular;
+	rt_indirecta = indirecta;
+
+
 	return color;
 }
 

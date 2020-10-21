@@ -17,6 +17,10 @@ class Raytracer
 {
 public:
 	float coeficiente_guardado = 1.00029;
+	Vec3fa rt_directo;
+	Vec3fa rt_indirecta;
+	Vec3fa rt_especular;
+	Vec3fa rt_caustica;
 	Raytracer();
 	Vec3fa raytrace(const ISPCCamera& camara, int x, int y, RTCScene escena, RTCIntersectContext& context);
 	Vec3fa traza(Ray rayo, int profundidad, RTCScene escena, RTCIntersectContext& context);
