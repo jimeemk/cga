@@ -69,7 +69,7 @@ Vec3fa Raytracer::sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo
 		indirecta = indirecta + estimacion_radiancia(nearest_photons, interseccion_rayo, rayo.dir, cant_photons, mat.coef_difuso / std::_Pi, radius);
 		
 		difuso = difuso + luz * f_att *  mat.coef_difuso * mat.color * dot(normalize(rayo.Ng), normalize(l_dir)); 
-
+		difuso = difuso / 100; // temporal pa que no sature
 		/* Calculo de termino especular */
 		int n = 500;
 		Vec3fa R = 2 * dot(normalize(rayo.Ng), normalize(l_dir)) * normalize(rayo.Ng) - normalize(l_dir);
@@ -110,10 +110,10 @@ float Raytracer::procesarOclusion(Vec3fa origen, Vec3fa direccion_luz, RTCScene 
 	bool hit = true;
 	int last_geomID = -1;
 	Vec3fa nuevo_origen;
-	while (hit) {
+	while (hit && res!=0) {
 		rtcIntersect1(escena, &context, RTCRayHit_(rayo_oclusion));
 		hit = rayo_oclusion.tfar != (float) inf;
-		if (hit && rayo_oclusion.geomID != last_geomID) {
+		if (hit && rayo_oclusion.geomID != last_geomID && rayo_oclusion.tfar<1) { //agrego lo del tfar porque sino siempre da con el techo, es a modo temporal
 			last_geomID = rayo_oclusion.geomID;
 			res *= Settings::getInstance()->getObject(last_geomID)->getMaterial().coef_transparencia;
 		}
