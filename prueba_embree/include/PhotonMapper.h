@@ -18,6 +18,7 @@ const int MAX_INTERSECTIONS = 100;
 
 using namespace embree;
 using namespace std;
+using namespace tbb;
 
 class PhotonMapper
 {
