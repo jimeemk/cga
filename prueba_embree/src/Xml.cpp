@@ -2,101 +2,52 @@
 
 void guardarMapaFotones(const char* ruta, PhotonKDTree* kdtree)
 {
-	TiXmlDocument doc;
-	TiXmlDeclaration* declaracion = new TiXmlDeclaration("1.0", "", "");
-	doc.LinkEndChild(declaracion);
-	TiXmlElement* root = new TiXmlElement("file");
-	doc.LinkEndChild(root);
-
 	if (kdtree != NULL)
 	{
+		ofstream file;
+		file.open(ruta);
 		std::vector<Photon> fotones = kdtree->kNNValue(Vec3f(0.f), kdtree->size());
 		std::vector<Photon>::iterator it;
 		for (it = fotones.begin(); it != fotones.end(); ++it)
 		{
-			TiXmlElement* photon_ele = new TiXmlElement("photon");
-			TiXmlElement* point_ele = new TiXmlElement("point");
-			TiXmlElement* dir_ele = new TiXmlElement("dir");
-			TiXmlElement* color_ele = new TiXmlElement("color");
-
-			Photon ph = *it;
-
-			point_ele->SetDoubleAttribute("x", ph.point.x);
-			point_ele->SetDoubleAttribute("y", ph.point.y);
-			point_ele->SetDoubleAttribute("z", ph.point.z);
-
-			dir_ele->SetDoubleAttribute("x", ph.dir.x);
-			dir_ele->SetDoubleAttribute("y", ph.dir.y);
-			dir_ele->SetDoubleAttribute("z", ph.dir.z);
-
-			color_ele->SetDoubleAttribute("x", ph.color.x);
-			color_ele->SetDoubleAttribute("y", ph.color.y);
-			color_ele->SetDoubleAttribute("z", ph.color.z);
-
-			photon_ele->LinkEndChild(point_ele);
-			photon_ele->LinkEndChild(dir_ele);
-			photon_ele->LinkEndChild(color_ele);
-			root->LinkEndChild(photon_ele);
+			Vec3fa p = it->point;
+			Vec3fa c = it->color;
+			Vec3fa d = it->dir;
+			file << p.x << "/" << p.y << "/" << p.z << "/" << c.x << "/" << c.y << "/" << c.z << "/\n";
 		}
+		file.close();
 	}
 
-	doc.SaveFile(ruta);
 }
 
 PhotonKDTree* cargarMapaFotones(const char* ruta)
 {
 	std::vector<Photon> fotones;
-	
-	TiXmlDocument doc(ruta);
-	doc.LoadFile();
-
-	TiXmlElement* root = doc.RootElement();
-
-	if (root = doc.RootElement())
+	string cadena;
+	ifstream fe(ruta);
+	if (fe.is_open())
 	{
-		TiXmlElement* photon_ele = root->FirstChildElement("photon");
-		
-		while (photon_ele != NULL)
-		{
+		while (!fe.eof()) {
+			fe >> cadena;
+			string delimiter = "/";
+			size_t pos = 0;
+			string token;
+			float p[6];
+			int k = 0;
+			while ((pos = cadena.find(delimiter)) != std::string::npos) {
+				token = cadena.substr(0, pos);
+				p[k] = std::stof(token);
+				k++;
+				cadena.erase(0, pos + delimiter.length());
+			}
 			Photon photon;
-			photon.color = Vec3f(0.f);
-			photon.dir = Vec3f(0.f);
-			photon.point = Vec3f(0.f);
-
-			TiXmlElement* point_ele = photon_ele->FirstChildElement("point");
-			TiXmlElement* dir_ele = photon_ele->FirstChildElement("dir");
-			TiXmlElement* color_ele = photon_ele->FirstChildElement("color");
-
-			float x, y, z;
-
-			if (point_ele != NULL)
-			{
-				x = stof(point_ele->Attribute("x"));
-				y = stof(point_ele->Attribute("y"));
-				z = stof(point_ele->Attribute("z"));
-				photon.point = Vec3f(x, y, z);
-			}
-
-			if (dir_ele != NULL)
-			{
-				x = stof(dir_ele->Attribute("x"));
-				y = stof(dir_ele->Attribute("y"));
-				z = stof(dir_ele->Attribute("z"));
-				photon.dir = Vec3f(x, y, z);
-			}
-
-			if (color_ele != NULL)
-			{
-				x = stof(color_ele->Attribute("x"));
-				y = stof(color_ele->Attribute("y"));
-				z = stof(color_ele->Attribute("z"));
-				photon.color = Vec3f(x, y, z);
-			}
+			photon.color = Vec3f(p[3], p[4], p[5]);
+			photon.dir = Vec3f(0, 0, 0);
+			photon.point = Vec3f(p[0], p[1], p[2]);
 			fotones.push_back(photon);
-			photon_ele = photon_ele->NextSiblingElement("photon");
 		}
+		fe.close();
 	}
-
 	if (fotones.empty()) return NULL;
 	else return new PhotonKDTree(fotones);
 }

@@ -79,7 +79,7 @@ void Settings::cargarConfiguraciones() {
 		scene->getObject(i)->agregarObjeto(device,escena);
 	}
 
-	std::string ruta_mf = "xml/mapa_fotones/" + scene->getNombre() + "-" + to_string(configuracion.cant_fotones) + ".xml";
+	std::string ruta_mf = "xml/mapa_fotones/" + scene->getNombre() + "-" + to_string(configuracion.cant_fotones) + ".txt";
 	PhotonMapper* photon_mapper = new PhotonMapper();
 	kdtree = cargarMapaFotones(ruta_mf.c_str());
 

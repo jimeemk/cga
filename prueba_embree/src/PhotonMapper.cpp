@@ -241,17 +241,11 @@ PhotonKDTree* PhotonMapper::emitPhotons(Scene* scene, unsigned int num_photons)
 		});
 	}
 
-	ofstream file;
-	file.open("puntos.txt");
 	std::vector<Photon> vecPhotones;
 	for (int i = 0; i < photons.size(); i++)
 	{
-		Vec3fa p = photons.at(i).point;
-		Vec3fa c = photons.at(i).color;
-		file << p.x << "/" << p.y << "/" << p.z <<"/"<< c.x << "/" << c.y << "/" << c.z << "/\n";
 		vecPhotones.push_back(photons.at(i));
 	}
-	file.close();
 
 	return new PhotonKDTree(vecPhotones);
 }
