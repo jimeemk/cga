@@ -8,6 +8,15 @@ Light::Light(Vec3f s, double p)
 {
 	source = s;
 	power = p;
+	celdas_activas = 0;
+	for (int i = 0; i < CELL_SIZE_X; i++)
+	{
+		for (int j = 0; j < CELL_SIZE_Y; j++)
+		{
+			projectionMap[i][j] = false;
+		}
+	}
+	bounds.lower_x = bounds.lower_y = bounds.lower_z = bounds.upper_x = bounds.upper_y = bounds.upper_z = 0.f;
 }
 
 double Light::getPower()

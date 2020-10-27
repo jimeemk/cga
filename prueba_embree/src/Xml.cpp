@@ -110,6 +110,32 @@ void cargarEscena(const char* ruta, Scene* scene)
 			{
 				TiXmlElement* obj_ele = objetos_ele->FirstChildElement("obj");
 				TiXmlElement* plano_ele = objetos_ele->FirstChildElement("plano");
+				TiXmlElement* esfera_ele = objetos_ele->FirstChildElement("esfera");
+
+				while (esfera_ele != NULL)
+				{
+					Vec3fa centro = Vec3fa(0.f);
+
+					TiXmlElement* centro_ele = esfera_ele->FirstChildElement("centro");
+
+					if (centro_ele != NULL)
+					{
+						float x = stof(centro_ele->Attribute("x"));
+						float y = stof(centro_ele->Attribute("y"));
+						float z = stof(centro_ele->Attribute("z"));
+						centro = Vec3fa(x, y, z);
+					}
+
+					float radio = stof(esfera_ele->Attribute("radio"));
+					std::string material = esfera_ele->Attribute("material");
+
+					Material mat = default;
+					if (materiales.find(material) != materiales.end()) mat = materiales.at(material);
+
+					Esfera* esfera = new Esfera(mat, centro, radio);
+					scene->addObject(esfera);
+					esfera_ele = esfera_ele->NextSiblingElement("esfera");
+				}
 
 				while (obj_ele != NULL)
 				{

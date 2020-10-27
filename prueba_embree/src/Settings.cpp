@@ -67,17 +67,14 @@ void Settings::cargarConfiguraciones() {
 	int width = configuracion.width;
 	int height = configuracion.height;
 
-	//Esto ahora va a mano pero despues se carga del XML 
-
-	//SquareLight* light = new SquareLight(Vec3fa(0.f, 15.0, 0.f), 10, 6, Vec3fa(0.f, -1.f, 0.f), Vec3fa(1.f, 0.f, 0.f));
-	//scene->addLight(light);
-
 	cargarEscena("xml/escenas/escena1.xml", scene);
 	
 	for (int i = 0; i < scene->getObjects().size(); i++)
 	{
 		scene->getObject(i)->agregarObjeto(device,escena);
 	}
+
+	rtcCommitScene(escena);
 
 	std::string ruta_mf = "xml/mapa_fotones/" + scene->getNombre() + "-" + to_string(configuracion.cant_fotones) + ".txt";
 	PhotonMapper* photon_mapper = new PhotonMapper();

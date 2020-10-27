@@ -35,6 +35,7 @@ public:
 	Object(string, Material, Vec3fa, float, Vec3fa);
 	Object(Material, Vec3fa, float, Vec3fa);
 	Object(RTCGeometry, Vec3fa);
+	Object(Material, Vec3fa);
 	~Object();
 	RTCGeometry getGeometry();
 	Vec3fa getDiffuseColor();
@@ -53,6 +54,7 @@ public:
 	Vec3fa rotarVertice(Vec3fa inicial, Vec3fa r);
 	Vec3fa escalarVertice(Vec3fa inicial, float e);
 	float getLadoMax(float a, float b, float c);
+	RTCBounds getBounds();
 protected:
 	RTCGeometry geometry;
 	Vec3fa diffuse_color;
@@ -67,6 +69,5 @@ protected:
 	std::vector<tinyobj::material_t> materials;
 	Material material;
 	float maxX, minX, maxY, minY, maxZ, minZ;
-
 	//falta el resto de la info que queramos del material
 };

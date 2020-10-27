@@ -30,6 +30,11 @@ Object::Object(RTCGeometry geo, Vec3fa c)
 	geometry = geo;
 	diffuse_color = c;
 }
+Object::Object(Material m, Vec3fa c)
+{
+	material = m;
+	centro = c;
+}
 
 RTCGeometry Object::getGeometry()
 {
@@ -216,4 +221,16 @@ float Object::getLadoMax(float a, float b, float c)
 		else
 			return c;
 	}
+}
+
+RTCBounds Object::getBounds()
+{
+	RTCBounds bounds;
+	bounds.lower_x = minX;
+	bounds.lower_y = minY;
+	bounds.lower_z = minZ;
+	bounds.upper_x = maxX;
+	bounds.upper_y = maxY;
+	bounds.upper_z = maxZ;
+	return bounds;
 }

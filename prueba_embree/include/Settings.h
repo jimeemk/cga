@@ -14,6 +14,7 @@
 #include "PhotonMapper.h"
 #include "Plano.h"
 #include "Cubo.h"
+#include "Esfera.h"
 
 #include "../common/camera.h"
 

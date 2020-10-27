@@ -5,8 +5,8 @@
 
 #define TILE_SIZE_X 10
 #define TILE_SIZE_Y 8
-#define HEIGHT 800
-#define WIDTH 800
+#define HEIGHT 600
+#define WIDTH 600
 
 
 using namespace embree;
@@ -124,18 +124,18 @@ int main()
 	
 	const int numTilesX = (WIDTH + TILE_SIZE_X - 1) / TILE_SIZE_X;
 	const int numTilesY = (HEIGHT + TILE_SIZE_Y - 1) / TILE_SIZE_Y;
-	parallel_for(size_t(0), size_t(numTilesX * numTilesY), [&](const range<size_t>& range) {
+	embree::parallel_for(size_t(0), size_t(numTilesX * numTilesY), [&](const range<size_t>& range) {
 		const int threadIndex = (int)TaskScheduler::threadIndex();
 		for (size_t i = range.begin(); i < range.end(); i++)
 		{
 			renderTiles((int)i, threadIndex, WIDTH, HEIGHT, time, Settings::getInstance()->getCamara().getISPCCamera(WIDTH, HEIGHT), s->getEscena(), numTilesX, numTilesY, s->getKdTree());
-			glClear(GL_COLOR_BUFFER_BIT);
+			//glClear(GL_COLOR_BUFFER_BIT);
 			/* Swap front and back buffers */
-			glDrawPixels(WIDTH, HEIGHT, GL_RGB, GL_UNSIGNED_INT, datos);
-			glfwSwapBuffers(window);
+			//glDrawPixels(WIDTH, HEIGHT, GL_RGB, GL_UNSIGNED_INT, datos);
+			//glfwSwapBuffers(window);
 
 			/* Poll for and process events */
-			glfwPollEvents();
+			//glfwPollEvents();
 		}
 	});
 

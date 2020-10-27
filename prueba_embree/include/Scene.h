@@ -6,6 +6,7 @@
 #include "SquareLight.h"
 #include "Object.h"
 #include "Plano.h"
+#include "Esfera.h"
 
 class Scene
 {
