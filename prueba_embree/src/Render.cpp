@@ -42,8 +42,8 @@ void Render::renderizarPixel(
 	color_indirecta.rgbBlue = 255.0f * clamp(raytracer.rt_indirecta.z, 0.0f, 1.0f);
 
 
-	//FreeImage_SetPixelColor(bitmap_especular, x, height - y - 1, &color_especular);
-	//FreeImage_SetPixelColor(bitmap_indirecta, x, height - y - 1, &color_indirecta);
+	FreeImage_SetPixelColor(bitmap_especular, x, height - y - 1, &color_especular);
+	FreeImage_SetPixelColor(bitmap_indirecta, x, height - y - 1, &color_indirecta);
 
 }
 
