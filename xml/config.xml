@@ -9,11 +9,11 @@
   </camara>
   
   <imagen>
-    <height>400</height>
-    <width>400</width>
+    <height>800</height>
+    <width>800</width>
     <fov>90</fov>
   </imagen>
   
-  <cant_fotones>250000</cant_fotones>
+  <cant_fotones>1000000</cant_fotones>
   
 </file>
