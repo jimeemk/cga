@@ -172,6 +172,7 @@ float Raytracer::softShadow(Vec3fa origen, RTCScene escena, RTCIntersectContext 
 	int num_samples = 256;
 	std::vector<Light*> luces = Settings::getInstance()->getLights();
 	float res = 0;
+<<<<<<< HEAD
 	int seed;
 	srand(time(NULL));
 	for (int i = 0; i < luces.size(); i++) {
@@ -185,5 +186,17 @@ float Raytracer::softShadow(Vec3fa origen, RTCScene escena, RTCIntersectContext 
 			}
 		}
 	}
+=======
+	for (int i = 0; i < luces.size(); i++) {
+		SquareLight* squareLight = (SquareLight*) luces[i];
+		if (squareLight) {
+			std::vector<Vec3f> positions = squareLight->samplePositions();
+			for (int j = 0; j < num_samples ; j++) {
+				res += procesarOclusion(origen, normalize(positions[j] - origen) ,positions[j], escena, context);
+			}
+		}
+	}
+
+>>>>>>> 7d6189e7c103b2a1b1112da7adc5b1fb3ac44725
 	return res / num_samples;
 }
