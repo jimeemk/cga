@@ -12,7 +12,7 @@ ADD_LIBRARY(prueba_embree
     ${LIB_HEADERS}
 )
 
-add_executable( ejecutable "prueba_embree.h" "prueba_embree.cpp" )
+add_executable( ejecutable  "main.cpp" )
 target_link_libraries(ejecutable prueba_embree)
 
 

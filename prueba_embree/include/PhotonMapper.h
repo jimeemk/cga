@@ -28,6 +28,11 @@ public:
 	PhotonKDTree* emitPhotons(Scene*, unsigned int);
 	Vec3f randomDir(int*, Vec3f);
 	float getMax(float a, float b, float c);
+	Vec3fa pasarAEsfericas(Vec3fa a, Vec3fa centro);
+	PhotonKDTree* fotonesCausticas(Scene* scene, unsigned int num_photons);
+	void obtenerMinYMaxUV(RTCBounds bounds, Vec3fa center,float& umin, float& umax, float& vmin, float& vmax);
+	Vec3fa direccionCausticas(int* seed, Vec3fa centro, float umin, float umax, float vmin, float vmax);
+	Vec3fa pasarACartesianas(Vec3fa a, Vec3fa centro);
 private:
 
 };

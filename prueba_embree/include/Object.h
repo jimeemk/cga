@@ -38,26 +38,13 @@ public:
 	Object(Material, Vec3fa);
 	~Object();
 	RTCGeometry getGeometry();
-	Vec3fa getDiffuseColor();
 	Vec3fa* getColoresCaras();
 	Vec3fa* getColoresVertices();
-	std::vector<float> getVertices();
-	std::vector<float> getVertexWeights();
-	std::vector<float> getNormales();
-	std::vector<float> getTexCoords();
-	std::vector<float> getTexCoordsws();
-	std::vector<tinyobj::skin_weight_t> getSkinWeights();
 	Material getMaterial();
 	virtual unsigned int agregarObjeto(RTCDevice, RTCScene);
-	void* alignedMalloc2(size_t size, size_t align);
-	Vec3fa trasladarVertice(Vec3fa inicial, Vec3fa t);
-	Vec3fa rotarVertice(Vec3fa inicial, Vec3fa r);
-	Vec3fa escalarVertice(Vec3fa inicial, float e);
-	float getLadoMax(float a, float b, float c);
 	RTCBounds getBounds();
 protected:
 	RTCGeometry geometry;
-	Vec3fa diffuse_color;
 	Vec3fa* colores_caras;
 	Vec3fa* colores_vertices;
 	string path;
@@ -69,5 +56,13 @@ protected:
 	std::vector<tinyobj::material_t> materials;
 	Material material;
 	float maxX, minX, maxY, minY, maxZ, minZ;
+
+	//funciones
+	void* alignedMalloc2(size_t size, size_t align);
+	Vec3fa trasladarVertice(Vec3fa inicial, Vec3fa t);
+	Vec3fa rotarVertice(Vec3fa inicial, Vec3fa r);
+	Vec3fa escalarVertice(Vec3fa inicial, float e);
+	float getLadoMax(float a, float b, float c);
+
 	//falta el resto de la info que queramos del material
 };

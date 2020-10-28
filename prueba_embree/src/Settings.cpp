@@ -30,6 +30,12 @@ RTCDevice Settings::getDevice() {
 Camera Settings::getCamara() {
 	return camara;
 }
+int Settings::getWidth() {
+	return width;
+}
+int Settings::getHeight() {
+	return height;
+}
 std::vector<Object*> Settings::getObjetos()
 {
     return scene->getObjects();
@@ -50,6 +56,9 @@ Object* Settings::getObject(int id)
 PhotonKDTree* Settings::getKdTree() {
 	return kdtree;
 }
+PhotonKDTree* Settings::getCausTree() {
+	return caustree;
+}
 std::vector<Light*> Settings::getLights() {
 	return scene->getLights();
 }
@@ -64,8 +73,8 @@ void Settings::cargarConfiguraciones() {
 	camara.from = configuracion.camara_from;
 	camara.to = configuracion.camara_to;
 	camara.fov = configuracion.fov;
-	int width = configuracion.width;
-	int height = configuracion.height;
+	width = configuracion.width;
+	height = configuracion.height;
 
 	cargarEscena("xml/escenas/escena1.xml", scene);
 	
@@ -77,15 +86,19 @@ void Settings::cargarConfiguraciones() {
 	rtcCommitScene(escena);
 
 	std::string ruta_mf = "xml/mapa_fotones/" + scene->getNombre() + "-" + to_string(configuracion.cant_fotones) + ".txt";
+	std::string ruta_causticas = "xml/mapa_fotones/" + scene->getNombre() + "-" + to_string(configuracion.cant_fotones) + "caus.txt";
 	PhotonMapper* photon_mapper = new PhotonMapper();
 	kdtree = cargarMapaFotones(ruta_mf.c_str());
+	caustree = cargarMapaFotones(ruta_causticas.c_str());
 
 	//Si no pudo cargar con el nombre segun el formato, emito los fotones y genero el xml
 	if (kdtree == NULL)
 	{
 		std::cout << "No existia\n";
 		kdtree = photon_mapper->emitPhotons(scene, configuracion.cant_fotones);
+		caustree = photon_mapper->fotonesCausticas(scene, configuracion.cant_fotones);
 		guardarMapaFotones(ruta_mf.c_str(), kdtree);
+		guardarMapaFotones(ruta_causticas.c_str(), caustree);
 	}
 	else std::cout << "Ya existia\n";
 }

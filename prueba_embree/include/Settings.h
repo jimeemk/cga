@@ -30,7 +30,10 @@ private:
     RTCDevice device;
     Camera camara;
     PhotonKDTree* kdtree;
+    PhotonKDTree* caustree;
     Scene* scene;
+    int width;
+    int height;
     /* Private constructor to prevent instancing. */
     Settings();
 
@@ -42,11 +45,14 @@ public:
     RTCDevice getDevice();
     Camera getCamara();
     PhotonKDTree* getKdTree();
+    PhotonKDTree* getCausTree();
     std::vector<Light*> getLights();
     std::vector<Object*> getObjetos();
     Scene* getScene();
     void addObject(Object* obj);
     void addLight(Light* lig);
+    int getWidth();
+    int getHeight();
     Object* getObject(int id);
     void cargarConfiguraciones();
 };

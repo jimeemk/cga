@@ -28,7 +28,6 @@ Object::~Object()
 Object::Object(RTCGeometry geo, Vec3fa c)
 {
 	geometry = geo;
-	diffuse_color = c;
 }
 Object::Object(Material m, Vec3fa c)
 {
@@ -41,11 +40,6 @@ RTCGeometry Object::getGeometry()
 	return geometry;
 }
 
-Vec3fa Object::getDiffuseColor() 
-{
-	return diffuse_color;
-}
-
 Vec3fa* Object::getColoresCaras()
 {
 	return colores_caras;
@@ -54,36 +48,6 @@ Vec3fa* Object::getColoresCaras()
 Vec3fa* Object::getColoresVertices()
 {
 	return colores_vertices;
-}
-
-std::vector<float> Object::getVertices()
-{
-	return attrib.vertices;
-}
-
-std::vector<float> Object::getVertexWeights()
-{
-	return attrib.vertex_weights;
-}
-
-std::vector<float> Object::getNormales()
-{
-	return attrib.normals;
-}
-
-std::vector<float> Object::getTexCoords()
-{
-	return attrib.texcoords;
-}
-
-std::vector<float> Object::getTexCoordsws()
-{
-	return attrib.texcoord_ws;
-}
-
-std::vector<tinyobj::skin_weight_t> Object::getSkinWeights()
-{
-	return attrib.skin_weights;
 }
 
 Material Object::getMaterial()
@@ -180,6 +144,34 @@ unsigned int Object::agregarObjeto(RTCDevice device, RTCScene escena) {
 		Vec3fa color = { 0.2,0.7,0.9 };
 		colores_caras[tri] = color;
 	}
+
+	//La desprolijidad que veran a continuacion, es para calcular los bounds.
+	bool pv = true;
+	for (int j = 0; j < attrib.vertices.size()/3; j++)
+	{
+		if (!pv)
+		{
+			if (vertices[j].x > maxX)maxX = vertices[j].x;
+			if (vertices[j].y > maxY)maxY = vertices[j].y;
+			if (vertices[j].z > maxZ)maxZ = vertices[j].z;
+			if (vertices[j].x < minX)minX = vertices[j].x;
+			if (vertices[j].y < minY)minY = vertices[j].y;
+			if (vertices[j].z < minZ)minZ = vertices[j].z;
+		}
+		else
+		{
+			maxX = vertices[j].x;
+			maxY = vertices[j].y;
+			maxZ = vertices[j].z;
+			minX = vertices[j].x;
+			minY = vertices[j].y;
+			minZ = vertices[j].z;
+			pv = false;
+		}
+	}
+	//Fin de la desprolijidad
+
+
 	rtcSetGeometryVertexAttributeCount(objeto, 1);
 	Vec3fa* colVertices = &colores_vertices[0];
 	rtcSetSharedGeometryBuffer(objeto, RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 0, RTC_FORMAT_FLOAT3, colVertices, 0, sizeof(Vec3fa), attrib.vertices.size());

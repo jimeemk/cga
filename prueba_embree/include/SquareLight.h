@@ -13,8 +13,6 @@ public:
 	Vec3f getNormal();
 	Vec3f getSource();
 	Vec3f randomDir(int *);
-	std::vector<Vec3f> samplePositions();
-
 private:
 	double size;
 	Vec3f normal;
