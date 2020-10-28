@@ -283,6 +283,12 @@ void cargarEscena(const char* ruta, Scene* scene)
 
 					SquareLight* cuadrada = new SquareLight(centro, potencia, size, normal, derecha);
 					scene->addLight(cuadrada);
+					Material material;
+					material.coef_ambiente = material.coef_especular = material.coef_reflexion = material.coef_transparencia = material.indice_refraccion = 0;
+					material.color = Vec3fa(1.f);
+					material.coef_difuso = 1.f;
+					Plano* plano_luz = new Plano(material, centro - normal * 0.0001, size, normal, derecha);
+					scene->addObject(plano_luz);
 
 					cuadrada_ele = cuadrada_ele->NextSiblingElement("cuadrada");
 				}
