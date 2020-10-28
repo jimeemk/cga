@@ -42,8 +42,8 @@ void Render::renderizarPixel(
 	color_indirecta.rgbBlue = 255.0f * clamp(raytracer.rt_indirecta.z, 0.0f, 1.0f);
 
 
-	FreeImage_SetPixelColor(bitmap_especular, x, height - y - 1, &color_especular);
-	FreeImage_SetPixelColor(bitmap_indirecta, x, height - y - 1, &color_indirecta);
+	//FreeImage_SetPixelColor(bitmap_especular, x, height - y - 1, &color_especular);
+	//FreeImage_SetPixelColor(bitmap_indirecta, x, height - y - 1, &color_indirecta);
 
 }
 
@@ -58,18 +58,6 @@ void Render::renderTiles(int taskIndex, int threadIndex,
 	FIBITMAP* &bitmap, FIBITMAP* &bitmap_directa, FIBITMAP* &bitmap_indirecta, FIBITMAP* &bitmap_causticas, FIBITMAP* &bitmap_especular,
 	tbb::concurrent_vector<tbb::concurrent_vector<Vec3i>>& pixels, tbb::concurrent_vector<tbb::concurrent_vector<Vec3i>>& datos)
 {
-	//Primero inicializo datos y pixels
-	for (int j = 0; j < height; j++)
-	{
-		tbb::concurrent_vector<Vec3i> v;
-		for (int k = 0; k < width; k++)
-		{
-			v.push_back(Vec3i(0,0,0));
-		}
-		datos.push_back(v);
-		pixels.push_back(v);
-	}
-
 	const unsigned int tileY = taskIndex / numTilesX;
 	const unsigned int tileX = taskIndex - tileY * numTilesX;
 	const unsigned int x0 = tileX * TILE_SIZE_X;

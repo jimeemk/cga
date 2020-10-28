@@ -69,7 +69,18 @@ int main()
 	/* Loop until the user closes the window */
 	
 	//Initialize todo
-	
+	//Primero inicializo datos y pixels
+	for (int j = 0; j < height; j++)
+	{
+		tbb::concurrent_vector<Vec3i> v;
+		for (int k = 0; k < width; k++)
+		{
+			v.push_back(Vec3i(0, 0, 0));
+		}
+		datos.push_back(v);
+		pixels.push_back(v);
+	}
+
 	float time = 0.5f;
 	FIBITMAP* bitmap = FreeImage_Allocate(width, height, 24);
 	FIBITMAP* bitmap_directa = FreeImage_Allocate(width, height, 24);
