@@ -153,8 +153,8 @@ PhotonKDTree* PhotonMapper::emitPhotons(Scene* scene, unsigned int num_photons)
 							Material m = obj->getMaterial();
 							Vec3fa coef_difuso = m.coef_difuso * m.color;
 							Vec3fa coef_especular = m.coef_especular * m.color;
-							float d = getMax(coef_difuso.x * m.color.x, coef_difuso.y * m.color.y, coef_difuso.z * m.color.z) / getMax(m.color.x, m.color.y, m.color.z);
-							float s = d + getMax(coef_especular.x * m.color.x, coef_especular.y * m.color.y, coef_especular.z * m.color.z) / getMax(m.color.x, m.color.y, m.color.z);
+							float d = getMax(coef_difuso.x * ph.color.x, coef_difuso.y * ph.color.y, coef_difuso.z * ph.color.z) / getMax(ph.color.x, ph.color.y, ph.color.z);
+							float s = d + getMax(coef_especular.x * ph.color.x, coef_especular.y * ph.color.y, coef_especular.z * ph.color.z) / getMax(ph.color.x, ph.color.y, ph.color.z);
 							float t = s + obj->getMaterial().coef_transparencia;
 
 							ph.point = ph.point + (ph.dir * query->ray.tfar);
@@ -175,9 +175,9 @@ PhotonKDTree* PhotonMapper::emitPhotons(Scene* scene, unsigned int num_photons)
 								if (dot(N, ph.dir) > 0) N = N * (-1);
 								Vec3fa dir2 = ph.dir - (dot(N, ph.dir) * 2) * N;
 
-								ph.color.x = ph.color.x * coef_especular.x / s;
-								ph.color.y = ph.color.y * coef_especular.y / s;
-								ph.color.z = ph.color.z * coef_especular.z / s;
+								ph.color.x = ph.color.x * coef_especular.x / (s-d);
+								ph.color.y = ph.color.y * coef_especular.y / (s-d);
+								ph.color.z = ph.color.z * coef_especular.z / (s-d);
 								ph.dir = normalize(dir2);
 							}
 							else if (random < t) //transparente
@@ -263,10 +263,13 @@ PhotonKDTree* PhotonMapper::fotonesCausticas(Scene* scene, unsigned int num_phot
 	{
 		for (int k = 0; k < scene->getObjects().size(); k++)
 		{
+			
 			if (scene->getObject(k)->getMaterial().coef_especular > 0)
 			{
-				float num_p = num_photons * scene->getObject(k)->getMaterial().coef_especular;
-				tbb::parallel_for(size_t(0), size_t(num_p), [&](const range<size_t>& range) {
+				float umin, umax, vmin, vmax = 0;
+				obtenerMinYMaxUV(scene->getObject(k)->getBounds(), scene->getLight(j)->getSource(), umin, umax, vmin, vmax);
+
+				tbb::parallel_for(size_t(0), size_t(num_photons), [&](const range<size_t>& range) {
 					const int threadIndex = (int)TaskScheduler::threadIndex();
 					for (size_t i = range.begin(); i < range.end(); i++)
 					{
@@ -276,10 +279,8 @@ PhotonKDTree* PhotonMapper::fotonesCausticas(Scene* scene, unsigned int num_phot
 							//Inicializacion de un foton.
 							Photon ph;
 							ph.point = scene->getLights().at(j)->getSource();
-							float umin, umax, vmin, vmax = 0;
-							obtenerMinYMaxUV(scene->getObject(k)->getBounds(),ph.point,umin,umax,vmin,vmax);
 							ph.dir = direccionCausticas(&seed, ph.point, umin,umax,vmin,vmax);
-							ph.color = Vec3fa(scene->getLights().at(j)->getPower() / num_p);
+							ph.color = Vec3fa(scene->getLights().at(j)->getPower() / num_photons);
 							//Context y RayHit para embree
 							RTCIntersectContext context;
 							rtcInitIntersectContext(&context);
@@ -311,13 +312,14 @@ PhotonKDTree* PhotonMapper::fotonesCausticas(Scene* scene, unsigned int num_phot
 									Material m = obj->getMaterial();
 									Vec3fa coef_difuso = m.coef_difuso * m.color;
 									Vec3fa coef_especular = m.coef_especular * m.color;
-									float d = getMax(coef_difuso.x * m.color.x, coef_difuso.y * m.color.y, coef_difuso.z * m.color.z) / getMax(m.color.x, m.color.y, m.color.z);
-									float s = d + getMax(coef_especular.x * m.color.x, coef_especular.y * m.color.y, coef_especular.z * m.color.z) / getMax(m.color.x, m.color.y, m.color.z);
+									float d = getMax(coef_difuso.x * ph.color.x, coef_difuso.y * ph.color.y, coef_difuso.z * ph.color.z) / getMax(ph.color.x, ph.color.y, ph.color.z);
+									float s = d + getMax(coef_especular.x * ph.color.x, coef_especular.y * ph.color.y, coef_especular.z * ph.color.z) / getMax(ph.color.x, ph.color.y, ph.color.z);
 									float t = s + obj->getMaterial().coef_transparencia;
 
 									ph.point = ph.point + (ph.dir * query->ray.tfar);
 									float random = (rand() % 1000) / 1000.f; //aca iria la ruleta rusa
-
+									if (intersections == 0 && m.coef_especular == 0)
+										random=1;
 									if (random < d) //refleja difuso
 									{
 										//se calcula el foton "reflejado" y se modifica el color del foton
@@ -330,37 +332,36 @@ PhotonKDTree* PhotonMapper::fotonesCausticas(Scene* scene, unsigned int num_phot
 									{
 										Vec3fa N = { query->hit.Ng_x, query->hit.Ng_y, query->hit.Ng_z };
 										N = normalize(N);
-										if (dot(N, ph.dir) > 0) N = N * (-1);
 										Vec3fa dir2 = ph.dir - (dot(N, ph.dir) * 2) * N;
 
-										ph.color.x = ph.color.x * coef_especular.x / s;
-										ph.color.y = ph.color.y * coef_especular.y / s;
-										ph.color.z = ph.color.z * coef_especular.z / s;
+										ph.color.x = ph.color.x * coef_especular.x / (s - d);
+										ph.color.y = ph.color.y * coef_especular.y / (s - d);
+										ph.color.z = ph.color.z * coef_especular.z / (s - d);
 										ph.dir = normalize(dir2);
 									}
 									else if (random < t) //transparente
 									{
-										//Atenuo el color segun cuanta luz deja pasar el material
+										Vec3fa normal = { query->hit.Ng_x, query->hit.Ng_y, query->hit.Ng_z };
+										normal = normalize(normal);
+										Vec3fa I = ph.dir;
+										float cos_i = dot(normalize(normal), normalize(I));
+										float n_actual = 1, n_material = m.indice_refraccion;
+										if (cos_i < 0) {
+											cos_i = -cos_i;
+										}
+										else {
+											normal = (-1)*normal;
+											std::swap(n_actual, n_material);
+										}
+										float eta = n_actual / n_material;
+										float k = 1 - eta * eta * (1 - cos_i * cos_i);
 
-										ph.color = ph.color * m.coef_transparencia;
-
-										bool adentro = false;
-										Vec3fa N = { query->hit.Ng_x, query->hit.Ng_y, query->hit.Ng_z };
-										N = normalize(N);
-										if (dot(N, ph.dir) > 0) { N = N * (-1); adentro = true; }
-
-										float ior = m.indice_refraccion;
-										float eta;
-										if (adentro)
-											eta = ior;
-										else
-											eta = 1 / ior;// Ese uno es medio cualquiera. Ponele que es el del aire.. ponele. 
-										float cosi = dot(N * (-1), ph.dir);
-										float k = 1 - eta * eta * (1 - cosi * cosi);
-										Vec3fa T = (ph.dir * eta) + (N * (eta * cosi - embree::sqrt(k)));
-										T = normalize(T);
-
-										ph.dir = T;
+										if (k < 0) {
+											ph.dir= Vec3fa(0);
+										}
+										else {
+											ph.dir= eta * I + (eta * cos_i - sqrtf(k)) * normal;
+										}
 									}
 									else
 									{
@@ -440,7 +441,7 @@ void PhotonMapper::obtenerMinYMaxUV(RTCBounds bounds, Vec3fa center,float& umin,
 	puntosPrisma[5] = Vec3fa(bounds.upper_x, bounds.lower_y, bounds.upper_z);
 	puntosPrisma[6] = Vec3fa(bounds.upper_x, bounds.upper_y, bounds.lower_z);
 	puntosPrisma[7] = Vec3fa(bounds.upper_x, bounds.upper_y, bounds.upper_z);
-
+	cout << puntosPrisma[0] << "\n";
 	Vec3fa primero = pasarAEsfericas(puntosPrisma[0], center);
 	umin = primero.y;
 	vmin = primero.z;

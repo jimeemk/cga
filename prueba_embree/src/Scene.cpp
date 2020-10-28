@@ -43,6 +43,10 @@ Object* Scene::getObject(int id)
 {
 	return objects.at(id);
 }
+Light* Scene::getLight(int id)
+{
+	return lights.at(id);
+}
 
 void Scene::setNombre(std::string n)
 {

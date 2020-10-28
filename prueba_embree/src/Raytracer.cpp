@@ -39,13 +39,14 @@ Vec3fa Raytracer::sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo
 	PhotonKDTree* kdtree = Settings::getInstance()->getKdTree();
 	
 	/* obtengo los n fotones mas cercanos al punto de interseccion */
-	int cant_photons = 140;
+	int cant_photons = 500;
 	std::vector<Photon> nearest_photons = kdtree->kNNValue(interseccion_rayo, cant_photons);
 	float radius = getRadius(nearest_photons, interseccion_rayo);
+	
 
 	for (int i = 0; i < luces.size(); i++) {
 		luz = 0;
-		Vec3fa posLuc = luces.at(i)->getSource();
+		Vec3fa l_pos = luces.at(i)->getSource();
 		Vec3fa l_dir = luces.at(i)->lightDir(interseccion_rayo);
 
 		/* initialize shadow ray */
@@ -55,28 +56,26 @@ Vec3fa Raytracer::sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo
 		rtcIntersect1(escena, &context, RTCRayHit_(shadow));
 
 		/* factor de atenuacion */
-		
-		float f_att = 1 / ((0.00020 * distance(shadow.org, posLuc)) + (0));
+		float f_att = 1 / ((0.020 * distance(shadow.org, l_pos)) + (0));
 
 		if (dot(normalize(rayo.Ng), normalize(l_dir)) > 0) {
-			if (shadow.tfar == (float)inf) {
+			if (shadow.tfar == (float) inf) {
 				luz = 1;
 			} else {
 				/* calcular porcentaje de luz bloqueada por cuerpos con transparencia */
-				luz = procesarOclusion(interseccion_rayo, l_dir, escena, context);
+				//luz = procesarOclusion(interseccion_rayo, l_dir, l_pos, escena, context);
+				luz = softShadow(interseccion_rayo, escena, context);
 			}
 		}
-		indirecta = indirecta + estimacion_radiancia(nearest_photons, interseccion_rayo, rayo.dir, cant_photons, mat.coef_difuso / std::_Pi, radius);
 		
-		difuso = difuso + luz * f_att *  mat.coef_difuso * mat.color * dot(normalize(rayo.Ng), normalize(l_dir)); 
-		difuso = difuso / 100; // temporal pa que no sature
+		difuso = difuso + (luz * f_att *  mat.coef_difuso * mat.color * dot(normalize(rayo.Ng), normalize(l_dir)))/luces.size(); 
 		/* Calculo de termino especular */
 		int n = 500;
 		Vec3fa R = 2 * dot(normalize(rayo.Ng), normalize(l_dir)) * normalize(rayo.Ng) - normalize(l_dir);
 		float RV = dot(normalize(R), -normalize(rayo.dir));
-		especular = especular + luz * f_att * mat.coef_especular * Vec3fa(1) * pow(RV, n); // Color blanco o color de la luz
+		especular = especular + (luz * f_att * mat.coef_especular * Vec3fa(1) * pow(RV, n))/luces.size(); // Color blanco o color de la luz
 	}
-
+	indirecta = estimacion_radiancia(nearest_photons, interseccion_rayo, rayo.dir, cant_photons, mat.coef_difuso / std::_Pi, radius);
 	/* color final */
 	color = color  + difuso + especular + indirecta;
 
@@ -104,16 +103,16 @@ Vec3fa Raytracer::sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo
 	return color;
 }
 
-float Raytracer::procesarOclusion(Vec3fa origen, Vec3fa direccion_luz, RTCScene escena, RTCIntersectContext context) {
+float Raytracer::procesarOclusion(Vec3fa origen, Vec3fa direccion_luz, Vec3fa pos_luz, RTCScene escena, RTCIntersectContext context) {
 	float res = 1;
 	Ray rayo_oclusion = { origen, direccion_luz, 0.001f, inf };
 	bool hit = true;
 	int last_geomID = -1;
 	Vec3fa nuevo_origen;
-	while (hit && res!=0) {
+	while (hit && res != 0) {
 		rtcIntersect1(escena, &context, RTCRayHit_(rayo_oclusion));
 		hit = rayo_oclusion.tfar != (float) inf;
-		if (hit && rayo_oclusion.geomID != last_geomID && rayo_oclusion.tfar<1) { //agrego lo del tfar porque sino siempre da con el techo, es a modo temporal
+		if (hit && rayo_oclusion.geomID != last_geomID && distance(rayo_oclusion.org, rayo_oclusion.org+direccion_luz * rayo_oclusion.tfar) < distance(rayo_oclusion.org, pos_luz)) { //agrego lo del tfar porque sino siempre da con el techo, es a modo temporal
 			last_geomID = rayo_oclusion.geomID;
 			res *= Settings::getInstance()->getObject(last_geomID)->getMaterial().coef_transparencia;
 		}
@@ -165,4 +164,24 @@ float Raytracer::getRadius(std::vector<Photon> photons, Vec3f pos) {
 	}
 	//std::cout << max << std::endl;
 	return max;
+}
+
+float Raytracer::softShadow(Vec3fa origen, RTCScene escena, RTCIntersectContext context) {
+	int num_samples = 256;
+	std::vector<Light*> luces = Settings::getInstance()->getLights();
+	float res = 0;
+	for (int i = 0; i < luces.size(); i++) {
+		SquareLight* squareLight = dynamic_cast<SquareLight*>(luces[i]);
+		if (squareLight) {
+			std::vector<Vec3f> positions = squareLight->samplePositions();
+			for (int j = 0; j < num_samples ; j++) {
+				res += procesarOclusion(origen, normalize(positions[j] - origen) ,positions[j], escena, context);
+			}
+			res = res / num_samples;
+		}
+		else
+			res += procesarOclusion(origen, normalize(luces.at(i)->getSource() - origen), luces.at(i)->getSource(), escena, context);
+	}
+	res = res / luces.size();
+	return res;
 }

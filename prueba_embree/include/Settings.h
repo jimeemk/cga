@@ -54,5 +54,6 @@ public:
     int getWidth();
     int getHeight();
     Object* getObject(int id);
+    Light* getLight(int id);
     void cargarConfiguraciones();
 };

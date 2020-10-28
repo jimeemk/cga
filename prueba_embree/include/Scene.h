@@ -22,6 +22,7 @@ public:
 	void addLight(Light* lig);
 	void setNombre(std::string);
 	Object* getObject(int id);
+	Light* getLight(int id);
 
 private:
 	std::vector<Object*> objects;

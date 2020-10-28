@@ -52,7 +52,10 @@ Object* Settings::getObject(int id)
 {
     return scene->getObject(id);
 }
-
+Light* Settings::getLight(int id)
+{
+	return scene->getLight(id);
+}
 PhotonKDTree* Settings::getKdTree() {
 	return kdtree;
 }
@@ -96,7 +99,7 @@ void Settings::cargarConfiguraciones() {
 	{
 		std::cout << "No existia\n";
 		kdtree = photon_mapper->emitPhotons(scene, configuracion.cant_fotones);
-		caustree = photon_mapper->fotonesCausticas(scene, configuracion.cant_fotones);
+		caustree = photon_mapper->fotonesCausticas(scene, configuracion.cant_fotones/10);
 		guardarMapaFotones(ruta_mf.c_str(), kdtree);
 		guardarMapaFotones(ruta_causticas.c_str(), caustree);
 	}

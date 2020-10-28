@@ -42,7 +42,7 @@ public:
 	Vec3fa* getColoresVertices();
 	Material getMaterial();
 	virtual unsigned int agregarObjeto(RTCDevice, RTCScene);
-	RTCBounds getBounds();
+	virtual RTCBounds getBounds();
 protected:
 	RTCGeometry geometry;
 	Vec3fa* colores_caras;
