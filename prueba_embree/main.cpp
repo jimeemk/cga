@@ -27,7 +27,7 @@
 #include "include/Settings.h"
 #include "include/Render.h"
 #include "include/Xml.h"
-
+#include <ctime> 
 
 using namespace embree;
 using namespace std;
@@ -37,7 +37,8 @@ tbb::concurrent_vector<tbb::concurrent_vector<Vec3i>> pixels;
 
 int main()
 {
-
+	unsigned t0, t1, t2;
+	t0 = clock();
 	GLFWwindow* window;
 
 	/* Initialize the library */
@@ -52,7 +53,9 @@ int main()
 	//creacion escena
 	int height = s->getHeight();
 	int width = s->getWidth();
-
+	t1 = clock();
+	double time = (double(t1 - t0) / CLOCKS_PER_SEC);
+	cout << "Mapa de fotones: " << time <<" s"<< endl;
 	/* Create a windowed mode window and its OpenGL context */
 	window = glfwCreateWindow(width, height, "Imagen", NULL, NULL);
 	if (!window)
@@ -81,7 +84,7 @@ int main()
 		pixels.push_back(v);
 	}
 
-	float time = 0.5f;
+	float tim = 0.5f;
 	FIBITMAP* bitmap = FreeImage_Allocate(width, height, 24);
 	FIBITMAP* bitmap_directa = FreeImage_Allocate(width, height, 24);
 	FIBITMAP* bitmap_especular = FreeImage_Allocate(width, height, 24);
@@ -94,7 +97,7 @@ int main()
 		for (size_t i = range.begin(); i < range.end(); i++)
 		{
 			Render* r = new Render();
-			r->renderTiles((int)i, threadIndex, width, height, time, Settings::getInstance()->getCamara().getISPCCamera(width, height), s->getEscena(), numTilesX, numTilesY, s->getKdTree(), bitmap,bitmap_directa, bitmap_indirecta, bitmap_causticas, bitmap_especular, pixels, datos);
+			r->renderTiles((int)i, threadIndex, width, height, tim, Settings::getInstance()->getCamara().getISPCCamera(width, height), s->getEscena(), numTilesX, numTilesY, s->getKdTree(), bitmap,bitmap_directa, bitmap_indirecta, bitmap_causticas, bitmap_especular, pixels, datos);
 		}
 	});
 
@@ -106,7 +109,10 @@ int main()
 	string nombre = str + ".png";
 	string nombre_especular = "especular_" + str + ".png";
 	string nombre_indirecta = "indirecta_" + str + ".png";
-
+	string nombre_causticas = "causticas_" + str + ".png";
+	t2 = clock();
+	double time2 = (double(t2 - t1) / CLOCKS_PER_SEC);
+	cout << "Tiempo de render: " << time2 << " s" << endl;
 	if (FreeImage_Save(FIF_PNG, bitmap, nombre.c_str(), 0)) {
 		cout << "Image saved" << endl;
 	}
@@ -116,6 +122,9 @@ int main()
 	}
 	
 	if (FreeImage_Save(FIF_PNG, bitmap_indirecta, nombre_indirecta.c_str(), 0)) {
+		cout << "Image saved" << endl;
+	}
+	if (FreeImage_Save(FIF_PNG, bitmap_causticas, nombre_causticas.c_str(), 0)) {
 		cout << "Image saved" << endl;
 	}
 	//Esto es necesario para pasar de concurrent vector a vector normal. Un vector normal no se puede usar en un parallel for.

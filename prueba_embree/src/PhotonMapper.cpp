@@ -441,7 +441,7 @@ void PhotonMapper::obtenerMinYMaxUV(RTCBounds bounds, Vec3fa center,float& umin,
 	puntosPrisma[5] = Vec3fa(bounds.upper_x, bounds.lower_y, bounds.upper_z);
 	puntosPrisma[6] = Vec3fa(bounds.upper_x, bounds.upper_y, bounds.lower_z);
 	puntosPrisma[7] = Vec3fa(bounds.upper_x, bounds.upper_y, bounds.upper_z);
-	cout << puntosPrisma[0] << "\n";
+
 	Vec3fa primero = pasarAEsfericas(puntosPrisma[0], center);
 	umin = primero.y;
 	vmin = primero.z;

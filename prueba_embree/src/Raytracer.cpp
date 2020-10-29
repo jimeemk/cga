@@ -3,6 +3,7 @@
 Raytracer::Raytracer() {
 	rt_especular = Vec3fa(0.0f);
 	rt_indirecta = Vec3fa(0.0f);
+	rt_caustica = Vec3fa(0.0f);
 }
 
 Vec3fa Raytracer::raytrace(const ISPCCamera& camara, int x, int y, RTCScene escena, RTCIntersectContext& context) {
@@ -33,16 +34,20 @@ Vec3fa Raytracer::sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo
 
 	Vec3fa color = Vec3fa(0.0f);
 	Vec3fa indirecta = Vec3fa(0.0f);
+	Vec3fa causticas = Vec3fa(0.0f);
 	Vec3fa difuso = Vec3fa(0.0f);
 	Vec3fa especular = Vec3fa(0.0f);
 
 	PhotonKDTree* kdtree = Settings::getInstance()->getKdTree();
+	PhotonKDTree* caustree = Settings::getInstance()->getCausTree();
 	
 	/* obtengo los n fotones mas cercanos al punto de interseccion */
-	int cant_photons = 500;
+	int cant_photons = 300;
 	std::vector<Photon> nearest_photons = kdtree->kNNValue(interseccion_rayo, cant_photons);
 	float radius = getRadius(nearest_photons, interseccion_rayo);
 	
+	std::vector<Photon> nearest_photonsCaus = caustree->kNNValue(interseccion_rayo, cant_photons);
+	float radiusCaus = getRadius(nearest_photonsCaus, interseccion_rayo);
 
 	for (int i = 0; i < luces.size(); i++) {
 		luz = 0;
@@ -56,7 +61,7 @@ Vec3fa Raytracer::sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo
 		rtcIntersect1(escena, &context, RTCRayHit_(shadow));
 
 		/* factor de atenuacion */
-		float f_att = 1 / ((0.020 * distance(shadow.org, l_pos)) + (0));
+		float f_att = 1 / (0.020*(distance(shadow.org, l_pos)));
 
 		if (dot(normalize(rayo.Ng), normalize(l_dir)) > 0) {
 			if (shadow.tfar == (float) inf) {
@@ -76,8 +81,9 @@ Vec3fa Raytracer::sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo
 		especular = especular + (luz * f_att * mat.coef_especular * Vec3fa(1) * pow(RV, n))/luces.size(); // Color blanco o color de la luz
 	}
 	indirecta = estimacion_radiancia(nearest_photons, interseccion_rayo, rayo.dir, cant_photons, mat.coef_difuso / std::_Pi, radius);
+	causticas = estimacion_radiancia(nearest_photonsCaus, interseccion_rayo, rayo.dir, cant_photons, mat.coef_difuso / std::_Pi, radiusCaus);
 	/* color final */
-	color = color  + difuso + especular + indirecta;
+	color = color  + mat.coef_difuso*difuso + mat.coef_especular*especular + (1-mat.coef_difuso-mat.coef_especular)*(indirecta+causticas);
 
 	if (profundidad < profundidad_max) {
 		if (mat.coef_reflexion > 0) {
@@ -98,6 +104,7 @@ Vec3fa Raytracer::sombra(RTCScene escena, RTCIntersectContext& context, Ray rayo
 	
 	rt_especular = especular;
 	rt_indirecta = indirecta;
+	rt_caustica = causticas;
 
 
 	return color;

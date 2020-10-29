@@ -42,9 +42,14 @@ void Render::renderizarPixel(
 	color_indirecta.rgbBlue = 255.0f * clamp(raytracer.rt_indirecta.z, 0.0f, 1.0f);
 
 
+	RGBQUAD color_causticas;
+	color_causticas.rgbRed = 255.0f * clamp(raytracer.rt_caustica.x, 0.0f, 1.0f);
+	color_causticas.rgbGreen = 255.0f * clamp(raytracer.rt_caustica.y, 0.0f, 1.0f);
+	color_causticas.rgbBlue = 255.0f * clamp(raytracer.rt_caustica.z, 0.0f, 1.0f);
+
 	FreeImage_SetPixelColor(bitmap_especular, x, height - y - 1, &color_especular);
 	FreeImage_SetPixelColor(bitmap_indirecta, x, height - y - 1, &color_indirecta);
-
+	FreeImage_SetPixelColor(bitmap_causticas, x, height - y - 1, &color_causticas);
 }
 
 void Render::renderTiles(int taskIndex, int threadIndex,
