@@ -3,7 +3,7 @@
 #
 cmake_minimum_required (VERSION 3.8)
 
-project ("prueba_embree")
+project ("photon_mapping")
 
 # Incluya los subproyectos.
-add_subdirectory ("prueba_embree")
+add_subdirectory ("photon_mapping")
